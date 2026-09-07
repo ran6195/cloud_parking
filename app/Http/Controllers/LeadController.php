@@ -19,6 +19,11 @@ class LeadController extends Controller
             'phone' => ['nullable', 'string', 'max:50'],
             'message' => ['nullable', 'string', 'max:5000'],
             'source_url' => ['nullable', 'string', 'max:255'],
+        ], attributes: [
+            'name' => 'nome',
+            'email' => 'email',
+            'phone' => 'telefono',
+            'message' => 'messaggio',
         ]);
 
         if (filled($request->input('website'))) {

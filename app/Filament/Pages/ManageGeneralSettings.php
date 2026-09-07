@@ -3,9 +3,14 @@
 namespace App\Filament\Pages;
 
 use App\Settings\GeneralSettings;
+use App\Support\HeaderFonts;
 use BackedEnum;
+use Filament\Forms\Components\ColorPicker;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Pages\SettingsPage;
 use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Tabs\Tab;
@@ -61,6 +66,33 @@ class ManageGeneralSettings extends SettingsPage
                                     ->label('robots.txt')
                                     ->rows(5)
                                     ->columnSpanFull(),
+                            ])
+                            ->columns(2),
+
+                        Tab::make('Header')
+                            ->schema([
+                                FileUpload::make('header_logo')
+                                    ->label('Logo')
+                                    ->image()
+                                    ->directory('settings')
+                                    ->imageEditor()
+                                    ->columnSpanFull(),
+                                ColorPicker::make('header_bg_color')
+                                    ->label('Colore sfondo'),
+                                ColorPicker::make('header_text_color')
+                                    ->label('Colore testo'),
+                                Select::make('header_font')
+                                    ->label('Font')
+                                    ->options(HeaderFonts::options())
+                                    ->native(false),
+                                Toggle::make('header_show_phone')
+                                    ->label('Mostra telefono'),
+                                Toggle::make('header_show_hours')
+                                    ->label('Mostra orari'),
+                                TextInput::make('header_cta_label')
+                                    ->label('Testo pulsante (opzionale)'),
+                                TextInput::make('header_cta_url')
+                                    ->label('Link pulsante'),
                             ])
                             ->columns(2),
                     ]),
