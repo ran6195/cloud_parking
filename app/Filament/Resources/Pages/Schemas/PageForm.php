@@ -3,8 +3,10 @@
 namespace App\Filament\Resources\Pages\Schemas;
 
 use App\Filament\Blocks\PageBuilderBlocks;
+use App\Support\GoogleFonts;
 use Filament\Forms\Components\Builder;
 use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -95,6 +97,12 @@ class PageForm
                                 Toggle::make('is_homepage')
                                     ->label('Usa come homepage')
                                     ->helperText('Questa pagina verrà mostrata su "/". Solo una pagina dovrebbe avere questo flag attivo.'),
+                                Select::make('font')
+                                    ->label('Font della pagina')
+                                    ->options(GoogleFonts::options())
+                                    ->searchable()
+                                    ->native(false)
+                                    ->helperText('Lasciare vuoto per usare il font predefinito.'),
                             ])
                             ->columns(2),
                     ]),

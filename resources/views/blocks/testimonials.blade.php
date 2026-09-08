@@ -7,7 +7,7 @@
                     <p class="text-slate-700">&ldquo;{{ $item['quote'] ?? '' }}&rdquo;</p>
                     <footer class="mt-4 flex items-center gap-3">
                         @if(! empty($item['avatar']))
-                            <img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($item['avatar']) }}"
+                            <img src="{{ \App\Support\Uploads::url($item['avatar']) }}"
                                  alt="{{ $item['author'] ?? '' }}" class="h-10 w-10 rounded-full object-cover">
                         @endif
                         <div>

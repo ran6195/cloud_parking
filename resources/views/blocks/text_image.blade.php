@@ -1,5 +1,5 @@
 @php
-    $imageUrl = ! empty($data['image']) ? \Illuminate\Support\Facades\Storage::disk('public')->url($data['image']) : null;
+    $imageUrl = \App\Support\Uploads::url($data['image'] ?? null);
     $imageFirst = ($data['image_position'] ?? 'right') === 'left';
 @endphp
 <section class="mx-auto max-w-6xl px-6 py-16">

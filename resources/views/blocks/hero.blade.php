@@ -1,4 +1,4 @@
-@php $imageUrl = ! empty($data['image']) ? \Illuminate\Support\Facades\Storage::disk('public')->url($data['image']) : null; @endphp
+@php $imageUrl = \App\Support\Uploads::url($data['image'] ?? null); @endphp
 <section class="mx-auto max-w-6xl px-6 py-16">
     <div class="grid items-center gap-10 md:grid-cols-2">
         <div>

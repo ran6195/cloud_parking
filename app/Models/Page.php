@@ -25,6 +25,7 @@ class Page extends Model implements HasMedia
         'published_at',
         'show_in_menu',
         'in_hub',
+        'font',
         'menu_order',
         'meta_title',
         'meta_description',

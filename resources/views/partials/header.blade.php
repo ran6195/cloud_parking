@@ -1,8 +1,8 @@
 @php
     $headerBg = $settings->header_bg_color ?: '#ffffff';
     $headerText = $settings->header_text_color ?: '#0f172a';
-    $headerFontFamily = \App\Support\HeaderFonts::cssFamily($settings->header_font);
-    $logoUrl = $settings->header_logo ? \Illuminate\Support\Facades\Storage::disk('public')->url($settings->header_logo) : null;
+    $headerFontFamily = \App\Support\GoogleFonts::cssFamily($settings->header_font);
+    $logoUrl = \App\Support\Uploads::url($settings->header_logo);
 @endphp
 <header style="background-color: {{ $headerBg }}; color: {{ $headerText }}; font-family: {{ $headerFontFamily }};" class="border-b border-black/10">
     <div class="mx-auto flex max-w-6xl items-center justify-between gap-6 px-6 py-4">

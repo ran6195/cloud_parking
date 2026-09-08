@@ -60,6 +60,22 @@ class GeneralSettings extends Settings
 
     public ?string $header_cta_url;
 
+    public bool $topbar_enabled;
+
+    public ?string $topbar_bg_color;
+
+    public ?string $topbar_text_color;
+
+    public bool $topbar_show_phone;
+
+    public bool $topbar_show_whatsapp;
+
+    public bool $topbar_show_hours;
+
+    public bool $topbar_show_address;
+
+    public int $topbar_height;
+
     public static function group(): string
     {
         return 'general';

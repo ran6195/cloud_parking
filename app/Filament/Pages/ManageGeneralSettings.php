@@ -3,7 +3,7 @@
 namespace App\Filament\Pages;
 
 use App\Settings\GeneralSettings;
-use App\Support\HeaderFonts;
+use App\Support\GoogleFonts;
 use BackedEnum;
 use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\FileUpload;
@@ -69,6 +69,34 @@ class ManageGeneralSettings extends SettingsPage
                             ])
                             ->columns(2),
 
+                        Tab::make('Barra superiore')
+                            ->schema([
+                                Toggle::make('topbar_enabled')
+                                    ->label('Mostra la barra superiore')
+                                    ->helperText('Fascia sottile sopra il menu, con orari/contatti/indirizzo.')
+                                    ->columnSpanFull(),
+                                ColorPicker::make('topbar_bg_color')
+                                    ->label('Colore sfondo'),
+                                ColorPicker::make('topbar_text_color')
+                                    ->label('Colore testo'),
+                                TextInput::make('topbar_height')
+                                    ->label('Altezza')
+                                    ->numeric()
+                                    ->minValue(24)
+                                    ->maxValue(120)
+                                    ->suffix('px')
+                                    ->default(40),
+                                Toggle::make('topbar_show_phone')
+                                    ->label('Mostra telefono'),
+                                Toggle::make('topbar_show_whatsapp')
+                                    ->label('Mostra WhatsApp'),
+                                Toggle::make('topbar_show_hours')
+                                    ->label('Mostra orari'),
+                                Toggle::make('topbar_show_address')
+                                    ->label('Mostra indirizzo'),
+                            ])
+                            ->columns(2),
+
                         Tab::make('Header')
                             ->schema([
                                 FileUpload::make('header_logo')
@@ -83,7 +111,8 @@ class ManageGeneralSettings extends SettingsPage
                                     ->label('Colore testo'),
                                 Select::make('header_font')
                                     ->label('Font')
-                                    ->options(HeaderFonts::options())
+                                    ->options(GoogleFonts::options())
+                                    ->searchable()
                                     ->native(false),
                                 Toggle::make('header_show_phone')
                                     ->label('Mostra telefono'),
