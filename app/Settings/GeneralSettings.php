@@ -44,37 +44,13 @@ class GeneralSettings extends Settings
 
     public ?string $robots_txt;
 
-    public ?string $header_logo;
-
-    public ?string $header_bg_color;
-
-    public ?string $header_text_color;
-
-    public ?string $header_font;
-
-    public bool $header_show_phone;
-
-    public bool $header_show_hours;
-
     public ?string $header_cta_label;
 
     public ?string $header_cta_url;
 
-    public bool $topbar_enabled;
+    public array $menu_items;
 
-    public ?string $topbar_bg_color;
-
-    public ?string $topbar_text_color;
-
-    public bool $topbar_show_phone;
-
-    public bool $topbar_show_whatsapp;
-
-    public bool $topbar_show_hours;
-
-    public bool $topbar_show_address;
-
-    public int $topbar_height;
+    public array $footer_links;
 
     public static function group(): string
     {

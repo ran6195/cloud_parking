@@ -8,6 +8,7 @@ use App\Settings\GeneralSettings;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
+use Throwable;
 
 class LeadController extends Controller
 {
@@ -32,8 +33,14 @@ class LeadController extends Controller
 
         $lead = Lead::create($validated);
 
+        // Invio sincrono (nessun worker di coda su Cloud): se il mailer fallisce
+        // il lead e' comunque salvato, quindi l'errore va solo registrato.
         if ($settings->email) {
-            Mail::to($settings->email)->send(new NewLeadReceived($lead));
+            try {
+                Mail::to($settings->email)->send(new NewLeadReceived($lead));
+            } catch (Throwable $e) {
+                report($e);
+            }
         }
 
         return back()->with('lead_sent', true);

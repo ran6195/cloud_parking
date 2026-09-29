@@ -2,9 +2,12 @@
 
 namespace Tests\Feature;
 
+use App\Mail\NewLeadReceived;
 use App\Models\Page;
 use App\Models\Redirect;
+use App\Settings\GeneralSettings;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
 
 class PublicSiteTest extends TestCase
@@ -74,6 +77,39 @@ class PublicSiteTest extends TestCase
             'name' => 'Mario Rossi',
             'email' => 'mario@example.com',
         ]);
+    }
+
+    public function test_lead_notification_is_sent_immediately_without_queue(): void
+    {
+        Mail::fake();
+
+        $settings = app(GeneralSettings::class);
+        $settings->email = 'gestore@example.com';
+        $settings->save();
+
+        $this->post('/contatti', [
+            'name' => 'Mario Rossi',
+            'email' => 'mario@example.com',
+        ])->assertRedirect();
+
+        Mail::assertSent(NewLeadReceived::class, fn ($mail) => $mail->hasTo('gestore@example.com'));
+        Mail::assertNothingQueued();
+    }
+
+    public function test_lead_is_saved_even_if_the_mailer_fails(): void
+    {
+        $settings = app(GeneralSettings::class);
+        $settings->email = 'gestore@example.com';
+        $settings->save();
+
+        Mail::shouldReceive('to->send')->andThrow(new \RuntimeException('SMTP non raggiungibile'));
+
+        $this->post('/contatti', [
+            'name' => 'Mario Rossi',
+            'email' => 'mario@example.com',
+        ])->assertRedirect()->assertSessionHas('lead_sent', true);
+
+        $this->assertDatabaseHas('leads', ['email' => 'mario@example.com']);
     }
 
     public function test_lead_form_honeypot_silently_rejects_bots(): void

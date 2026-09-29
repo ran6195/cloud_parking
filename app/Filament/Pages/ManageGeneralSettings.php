@@ -3,14 +3,10 @@
 namespace App\Filament\Pages;
 
 use App\Settings\GeneralSettings;
-use App\Support\GoogleFonts;
 use BackedEnum;
-use Filament\Forms\Components\ColorPicker;
-use Filament\Forms\Components\FileUpload;
-use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Toggle;
 use Filament\Pages\SettingsPage;
 use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Tabs\Tab;
@@ -39,14 +35,44 @@ class ManageGeneralSettings extends SettingsPage
                                 TextInput::make('company_name')->label('Ragione sociale'),
                                 TextInput::make('vat_number')->label('P.IVA'),
                                 TextInput::make('legal_address')->label('Sede legale'),
-                                TextInput::make('operational_address')->label('Sede operativa'),
+                                TextInput::make('operational_address')->label('Indirizzo del parcheggio'),
                                 TextInput::make('phone')->label('Telefono')->tel(),
                                 TextInput::make('whatsapp')->label('WhatsApp')->tel(),
                                 TextInput::make('email')->label('Email')->email(),
-                                TextInput::make('opening_hours')->label('Orari'),
+                                TextInput::make('opening_hours')
+                                    ->label('Orari')
+                                    ->helperText('Es. "tutti i giorni, 24 ore su 24". Usato anche nei testi con {orari}.'),
                                 TextInput::make('facebook_url')->label('Facebook')->url(),
                                 TextInput::make('instagram_url')->label('Instagram')->url(),
                                 TextInput::make('linkedin_url')->label('LinkedIn')->url(),
+                            ])
+                            ->columns(2),
+
+                        Tab::make('Menu')
+                            ->schema([
+                                Repeater::make('menu_items')
+                                    ->label('Voci del menu principale')
+                                    ->helperText('Per le sezioni della home usa le ancore, es. /#tariffe.')
+                                    ->schema([
+                                        TextInput::make('label')->label('Testo')->required(),
+                                        TextInput::make('url')->label('Link')->required(),
+                                    ])
+                                    ->columns(2)
+                                    ->reorderable()
+                                    ->columnSpanFull(),
+                                TextInput::make('header_cta_label')
+                                    ->label('Testo pulsante in evidenza'),
+                                TextInput::make('header_cta_url')
+                                    ->label('Link pulsante in evidenza'),
+                                Repeater::make('footer_links')
+                                    ->label('Link nel footer')
+                                    ->schema([
+                                        TextInput::make('label')->label('Testo')->required(),
+                                        TextInput::make('url')->label('Link')->required(),
+                                    ])
+                                    ->columns(2)
+                                    ->reorderable()
+                                    ->columnSpanFull(),
                             ])
                             ->columns(2),
 
@@ -66,62 +92,6 @@ class ManageGeneralSettings extends SettingsPage
                                     ->label('robots.txt')
                                     ->rows(5)
                                     ->columnSpanFull(),
-                            ])
-                            ->columns(2),
-
-                        Tab::make('Barra superiore')
-                            ->schema([
-                                Toggle::make('topbar_enabled')
-                                    ->label('Mostra la barra superiore')
-                                    ->helperText('Fascia sottile sopra il menu, con orari/contatti/indirizzo.')
-                                    ->columnSpanFull(),
-                                ColorPicker::make('topbar_bg_color')
-                                    ->label('Colore sfondo'),
-                                ColorPicker::make('topbar_text_color')
-                                    ->label('Colore testo'),
-                                TextInput::make('topbar_height')
-                                    ->label('Altezza')
-                                    ->numeric()
-                                    ->minValue(24)
-                                    ->maxValue(120)
-                                    ->suffix('px')
-                                    ->default(40),
-                                Toggle::make('topbar_show_phone')
-                                    ->label('Mostra telefono'),
-                                Toggle::make('topbar_show_whatsapp')
-                                    ->label('Mostra WhatsApp'),
-                                Toggle::make('topbar_show_hours')
-                                    ->label('Mostra orari'),
-                                Toggle::make('topbar_show_address')
-                                    ->label('Mostra indirizzo'),
-                            ])
-                            ->columns(2),
-
-                        Tab::make('Header')
-                            ->schema([
-                                FileUpload::make('header_logo')
-                                    ->label('Logo')
-                                    ->image()
-                                    ->directory('settings')
-                                    ->imageEditor()
-                                    ->columnSpanFull(),
-                                ColorPicker::make('header_bg_color')
-                                    ->label('Colore sfondo'),
-                                ColorPicker::make('header_text_color')
-                                    ->label('Colore testo'),
-                                Select::make('header_font')
-                                    ->label('Font')
-                                    ->options(GoogleFonts::options())
-                                    ->searchable()
-                                    ->native(false),
-                                Toggle::make('header_show_phone')
-                                    ->label('Mostra telefono'),
-                                Toggle::make('header_show_hours')
-                                    ->label('Mostra orari'),
-                                TextInput::make('header_cta_label')
-                                    ->label('Testo pulsante (opzionale)'),
-                                TextInput::make('header_cta_url')
-                                    ->label('Link pulsante'),
                             ])
                             ->columns(2),
                     ]),

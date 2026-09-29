@@ -1,18 +1,26 @@
-@php $items = $data['items'] ?? []; @endphp
+@php
+    use App\Support\SiteText;
+
+    $items = $data['items'] ?? [];
+    $uid = 'faq-'.substr(md5(json_encode($items)), 0, 6);
+@endphp
 @if(! empty($items))
-    <section class="mx-auto max-w-4xl px-6 py-16">
-        @if(! empty($data['heading']))
-            <h2 class="text-2xl font-bold text-slate-900">{{ $data['heading'] }}</h2>
-        @endif
-        <div class="mt-6 divide-y divide-slate-200">
-            @foreach($items as $item)
-                <details class="group py-4">
-                    <summary class="cursor-pointer font-semibold text-slate-900 marker:content-none">
-                        {{ $item['question'] ?? '' }}
-                    </summary>
-                    <p class="mt-2 text-slate-600">{{ $item['answer'] ?? '' }}</p>
-                </details>
-            @endforeach
+    <x-section :data="$data" default-background="carta" default-anchor="domande">
+        <div class="grid gap-10 lg:grid-cols-3 lg:gap-16">
+            <div>
+                <h2 class="titolo-sezione">{{ $data['heading'] ?? 'Domande frequenti' }}</h2>
+                @if(! empty($data['intro']))
+                    <p class="mt-4 text-lg text-testo-soft">{{ SiteText::fill($data['intro']) }}</p>
+                @endif
+            </div>
+
+            <div class="border-t border-bordo lg:col-span-2" x-data="{ aperta: null }">
+                @foreach($items as $item)
+                    <x-faq-item :id="$uid.'-'.$loop->index" :index="$loop->index"
+                                :question="$item['question'] ?? ''"
+                                :answer="SiteText::fill($item['answer'] ?? '')" />
+                @endforeach
+            </div>
         </div>
-    </section>
+    </x-section>
 @endif

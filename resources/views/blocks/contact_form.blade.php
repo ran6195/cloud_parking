@@ -1,55 +1,53 @@
-<section class="mx-auto max-w-2xl px-6 py-16">
-    @if(! empty($data['heading']))
-        <h2 class="text-2xl font-bold text-slate-900">{{ $data['heading'] }}</h2>
-    @endif
-    @if(! empty($data['subheading']))
-        <p class="mt-2 text-slate-600">{{ $data['subheading'] }}</p>
-    @endif
+<x-section :data="$data" default-background="terra">
+    <div class="mx-auto max-w-2xl rounded-modulo bg-carta p-6 sm:p-10">
+        @if(! empty($data['heading']))
+            <h2 class="titolo-sezione">{{ $data['heading'] }}</h2>
+        @endif
+        @if(! empty($data['subheading']))
+            <p class="mt-3 text-lg text-testo-soft">{{ \App\Support\SiteText::fill($data['subheading']) }}</p>
+        @endif
 
-    @if(session('lead_sent'))
-        <div class="mt-6 rounded-md bg-green-50 p-4 text-sm text-green-800">
-            Grazie, la tua richiesta &egrave; stata inviata con successo.
-        </div>
-    @else
-        <form method="POST" action="{{ route('leads.store') }}" class="mt-6 space-y-4">
-            @csrf
-            <input type="text" name="website" tabindex="-1" autocomplete="off" class="hidden" aria-hidden="true">
-            <input type="hidden" name="source_url" value="{{ url()->current() }}">
+        @if(session('lead_sent'))
+            <p class="mt-6 flex items-center gap-3 rounded-controllo border border-bordo bg-terra p-4 font-bold" role="status">
+                <x-icona name="check" class="size-6" />
+                Grazie, la tua richiesta è stata inviata. Ti rispondiamo al più presto.
+            </p>
+        @else
+            <form method="POST" action="{{ route('leads.store') }}" class="mt-8 space-y-5">
+                @csrf
+                <input type="text" name="website" tabindex="-1" autocomplete="off" class="hidden" aria-hidden="true">
+                <input type="hidden" name="source_url" value="{{ url()->current() }}">
 
-            <div>
-                <label class="block text-sm font-medium text-slate-700">Nome</label>
-                <input type="text" name="name" required value="{{ old('name') }}"
-                       class="mt-1 w-full rounded-md border-slate-300 shadow-sm focus:border-slate-500 focus:ring-slate-500">
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-slate-700">Email</label>
-                <input type="email" name="email" required value="{{ old('email') }}"
-                       class="mt-1 w-full rounded-md border-slate-300 shadow-sm focus:border-slate-500 focus:ring-slate-500">
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-slate-700">Telefono</label>
-                <input type="tel" name="phone" value="{{ old('phone') }}"
-                       class="mt-1 w-full rounded-md border-slate-300 shadow-sm focus:border-slate-500 focus:ring-slate-500">
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-slate-700">Messaggio</label>
-                <textarea name="message" rows="4"
-                          class="mt-1 w-full rounded-md border-slate-300 shadow-sm focus:border-slate-500 focus:ring-slate-500">{{ old('message') }}</textarea>
-            </div>
+                @foreach([
+                    ['name', 'Nome', 'text', true, 'name'],
+                    ['email', 'Email', 'email', true, 'email'],
+                    ['phone', 'Telefono', 'tel', false, 'tel'],
+                ] as [$field, $label, $type, $required, $autocomplete])
+                    <div>
+                        <label for="lead-{{ $field }}" class="block font-bold">{{ $label }} @unless($required)<span class="font-normal text-testo-soft">(facoltativo)</span>@endunless</label>
+                        <input id="lead-{{ $field }}" type="{{ $type }}" name="{{ $field }}" value="{{ old($field) }}" autocomplete="{{ $autocomplete }}"
+                               @if($required) required @endif class="campo mt-2"
+                               @error($field) aria-invalid="true" aria-describedby="lead-{{ $field }}-errore" @enderror>
+                        @error($field)
+                            <p id="lead-{{ $field }}-errore" class="mt-2 text-sm font-bold text-errore">{{ $message }}</p>
+                        @enderror
+                    </div>
+                @endforeach
 
-            @if($errors->any())
-                <div class="rounded-md bg-red-50 p-4 text-sm text-red-800">
-                    <ul class="list-inside list-disc">
-                        @foreach($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
+                <div>
+                    <label for="lead-message" class="block font-bold">Messaggio <span class="font-normal text-testo-soft">(facoltativo)</span></label>
+                    <textarea id="lead-message" name="message" rows="4"
+                              class="campo mt-2"
+                              @error('message') aria-invalid="true" aria-describedby="lead-message-errore" @enderror>{{ old('message') }}</textarea>
+                    @error('message')
+                        <p id="lead-message-errore" class="mt-2 text-sm font-bold text-errore">{{ $message }}</p>
+                    @enderror
                 </div>
-            @endif
 
-            <button type="submit" class="rounded-md bg-slate-900 px-6 py-3 text-sm font-semibold text-white hover:bg-slate-700">
-                {{ $data['submit_label'] ?? 'Invia richiesta' }}
-            </button>
-        </form>
-    @endif
-</section>
+                <button type="submit" class="btn-primario w-full sm:w-auto">
+                    {{ $data['submit_label'] ?? 'Invia richiesta' }}
+                </button>
+            </form>
+        @endif
+    </div>
+</x-section>

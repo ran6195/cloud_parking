@@ -23,10 +23,7 @@ class Page extends Model implements HasMedia
         'blocks',
         'is_published',
         'published_at',
-        'show_in_menu',
         'in_hub',
-        'font',
-        'menu_order',
         'meta_title',
         'meta_description',
         'canonical_url',
@@ -43,7 +40,6 @@ class Page extends Model implements HasMedia
             'is_homepage' => 'boolean',
             'is_published' => 'boolean',
             'published_at' => 'datetime',
-            'show_in_menu' => 'boolean',
             'in_hub' => 'boolean',
             'robots_index' => 'boolean',
             'robots_follow' => 'boolean',
@@ -94,11 +90,6 @@ class Page extends Model implements HasMedia
     public function scopeInHub(Builder $query): Builder
     {
         return $query->where('in_hub', true);
-    }
-
-    public function scopeInMenu(Builder $query): Builder
-    {
-        return $query->where('show_in_menu', true)->orderBy('menu_order');
     }
 
     public function getMetaTitleForSeo(): string

@@ -1,24 +1,26 @@
-@php $items = $data['items'] ?? []; @endphp
+@php
+    $items = $data['items'] ?? [];
+    $parking = app(\App\Settings\ParkingSettings::class);
+    $showRating = ($data['show_rating'] ?? true) && $parking->google_rating && $parking->google_reviews_count;
+@endphp
 @if(! empty($items))
-    <section class="mx-auto max-w-6xl px-6 py-16">
-        <div class="grid gap-8 md:grid-cols-2">
+    <x-section :data="$data" default-background="terra">
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            @if(! empty($data['heading']))
+                <h2 class="titolo-sezione">{{ $data['heading'] }}</h2>
+            @endif
+            @if($showRating)
+                <p class="flex items-center gap-2 text-lg">
+                    <x-icona name="star" class="size-6 fill-segnale text-fondo" />
+                    <span><strong class="font-display text-2xl">{{ number_format($parking->google_rating, 1, ',', '') }}</strong> su 5 da {{ $parking->google_reviews_count }} recensioni Google</span>
+                </p>
+            @endif
+        </div>
+
+        <div class="mt-10 grid gap-5 md:grid-cols-3">
             @foreach($items as $item)
-                <blockquote class="rounded-lg bg-slate-50 p-6">
-                    <p class="text-slate-700">&ldquo;{{ $item['quote'] ?? '' }}&rdquo;</p>
-                    <footer class="mt-4 flex items-center gap-3">
-                        @if(! empty($item['avatar']))
-                            <img src="{{ \App\Support\Uploads::url($item['avatar']) }}"
-                                 alt="{{ $item['author'] ?? '' }}" class="h-10 w-10 rounded-full object-cover">
-                        @endif
-                        <div>
-                            <p class="font-semibold text-slate-900">{{ $item['author'] ?? '' }}</p>
-                            @if(! empty($item['role']))
-                                <p class="text-sm text-slate-500">{{ $item['role'] }}</p>
-                            @endif
-                        </div>
-                    </footer>
-                </blockquote>
+                <x-review-card :quote="$item['quote'] ?? ''" :author="$item['author'] ?? ''" :role="$item['role'] ?? null" />
             @endforeach
         </div>
-    </section>
+    </x-section>
 @endif

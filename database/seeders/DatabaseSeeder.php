@@ -24,31 +24,9 @@ class DatabaseSeeder extends Seeder
         ]);
 
         Page::create([
-            'title' => 'Home',
-            'slug' => 'home',
-            'is_homepage' => true,
-            'is_published' => true,
-            'excerpt' => 'Pagina di esempio generata dal CMS.',
-            'meta_description' => 'Sito vetrina di esempio generato dal CMS.',
-            'blocks' => [
-                [
-                    'type' => 'hero',
-                    'data' => [
-                        'heading' => 'Benvenuto sul tuo nuovo sito',
-                        'subheading' => 'Contenuto di esempio: modifica o elimina questa pagina dal pannello Filament.',
-                        'cta_label' => 'Contattaci',
-                        'cta_url' => '/contatti',
-                    ],
-                ],
-            ],
-        ]);
-
-        Page::create([
             'title' => 'Contatti',
             'slug' => 'contatti',
             'is_published' => true,
-            'show_in_menu' => true,
-            'menu_order' => 1,
             'excerpt' => 'Richiedi informazioni.',
             'blocks' => [
                 [
@@ -65,8 +43,6 @@ class DatabaseSeeder extends Seeder
             'title' => 'Novità',
             'slug' => 'novita',
             'is_published' => true,
-            'show_in_menu' => true,
-            'menu_order' => 2,
             'excerpt' => 'Le ultime novità.',
             'blocks' => [
                 [
@@ -77,5 +53,7 @@ class DatabaseSeeder extends Seeder
                 ],
             ],
         ]);
+
+        $this->call(LandingPageSeeder::class);
     }
 }

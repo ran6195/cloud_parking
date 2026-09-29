@@ -25,9 +25,6 @@ class PagesTable
                 IconColumn::make('is_published')
                     ->label('Pubblicata')
                     ->boolean(),
-                IconColumn::make('show_in_menu')
-                    ->label('Nel menu')
-                    ->boolean(),
                 IconColumn::make('in_hub')
                     ->label('In Novità')
                     ->boolean(),

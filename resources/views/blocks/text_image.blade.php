@@ -2,18 +2,18 @@
     $imageUrl = \App\Support\Uploads::url($data['image'] ?? null);
     $imageFirst = ($data['image_position'] ?? 'right') === 'left';
 @endphp
-<section class="mx-auto max-w-6xl px-6 py-16">
-    <div class="grid items-center gap-10 md:grid-cols-2">
-        <div class="{{ $imageFirst ? 'md:order-2' : '' }}">
+<x-section :data="$data" default-background="carta">
+    <div class="grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
+        <div class="{{ $imageFirst ? 'lg:order-2' : '' }}">
             @if(! empty($data['heading']))
-                <h2 class="text-2xl font-bold text-slate-900">{{ $data['heading'] }}</h2>
+                <h2 class="titolo-sezione">{{ $data['heading'] }}</h2>
             @endif
             @if(! empty($data['content']))
-                <div class="prose prose-slate mt-4 max-w-none">{!! $data['content'] !!}</div>
+                <div class="prosa mt-5 text-lg leading-relaxed text-testo-soft">{!! $data['content'] !!}</div>
             @endif
         </div>
         @if($imageUrl)
-            <img src="{{ $imageUrl }}" alt="{{ $data['heading'] ?? '' }}" class="w-full rounded-lg" loading="lazy">
+            <img src="{{ $imageUrl }}" alt="{{ $data['heading'] ?? '' }}" class="w-full rounded-card" width="800" height="600" loading="lazy">
         @endif
     </div>
-</section>
+</x-section>

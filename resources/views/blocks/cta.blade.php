@@ -1,14 +1,15 @@
-<section class="bg-slate-900 py-16">
-    <div class="mx-auto max-w-4xl px-6 text-center">
-        @if(! empty($data['heading']))
-            <h2 class="text-3xl font-bold text-white">{{ $data['heading'] }}</h2>
-        @endif
-        @if(! empty($data['text']))
-            <p class="mt-4 text-slate-300">{{ $data['text'] }}</p>
-        @endif
+<section @if(! empty($data['anchor'])) id="{{ $data['anchor'] }}" @endif class="bg-segnale py-16 text-fondo sm:py-20">
+    <div class="contenitore flex flex-col items-start gap-8 lg:flex-row lg:items-center lg:justify-between">
+        <div class="max-w-2xl">
+            <h2 class="titolo-sezione">{{ \App\Support\SiteText::fill($data['heading'] ?? '') }}</h2>
+            @if(! empty($data['text']))
+                <p class="mt-3 text-lg">{{ \App\Support\SiteText::fill($data['text']) }}</p>
+            @endif
+        </div>
         @if(! empty($data['button_label']) && ! empty($data['button_url']))
-            <a href="{{ $data['button_url'] }}" class="mt-8 inline-block rounded-md bg-white px-6 py-3 text-sm font-semibold text-slate-900 hover:bg-slate-100">
+            <a href="{{ $data['button_url'] }}" class="btn-primario shrink-0 px-7 text-lg">
                 {{ $data['button_label'] }}
+                <x-icona name="arrow-right" class="size-5" />
             </a>
         @endif
     </div>

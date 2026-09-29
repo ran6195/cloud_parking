@@ -22,6 +22,7 @@ class FilamentAdminTest extends TestCase
         $this->get('/admin/redirects/create')->assertOk();
         $this->get('/admin/leads')->assertOk();
         $this->get('/admin/manage-general-settings')->assertOk();
+        $this->get('/admin/manage-parking-settings')->assertOk();
     }
 
     public function test_admin_pages_redirect_guests_to_login(): void

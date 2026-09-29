@@ -4,6 +4,139 @@
 @source '../../storage/framework/views/*.php';
 
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-sans: 'Atkinson Hyperlegible', system-ui, sans-serif;
+    --font-display: 'Bricolage Grotesque', Georgia, serif;
+
+    --color-fondo: #0f3b47;
+    --color-fondo-scuro: #08262e;
+    --color-segnale: #ffc928;
+    --color-segnale-scuro: #f5bb00;
+    --color-terra: #eef2f1;
+    --color-carta: #ffffff;
+    --color-testo: #0f3b47;
+    --color-testo-soft: #4a5c61;
+    --color-testo-chiaro: #d5e3e5;
+    --color-bordo: #cfdcdd;
+    --color-bordo-input: #b9c9cc;
+    --color-input-bg: #f7faf9;
+    --color-errore: #b3261e;
+
+    --radius-controllo: 10px;
+    --radius-card: 16px;
+    --radius-modulo: 20px;
+
+    --shadow-modulo: 0 24px 48px -16px rgb(8 38 46 / 0.35);
+
+    --container-sito: 1200px;
+}
+
+@layer base {
+    html {
+        scroll-padding-top: 5.5rem;
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+        html {
+            scroll-behavior: smooth;
+        }
+    }
+
+    body {
+        @apply bg-terra font-sans text-testo;
+    }
+
+    h1, h2, h3 {
+        @apply font-display;
+    }
+
+    :focus-visible {
+        outline: 3px solid var(--color-segnale);
+        outline-offset: 2px;
+        box-shadow: 0 0 0 5px var(--color-fondo);
+    }
+
+    [x-cloak] {
+        display: none !important;
+    }
+}
+
+@utility contenitore {
+    @apply mx-auto w-full max-w-sito px-5 sm:px-8 lg:px-10;
+}
+
+@utility titolo-sezione {
+    @apply font-display text-3xl leading-[1.05] font-extrabold tracking-[-1px] sm:text-4xl lg:text-[2.75rem];
+}
+
+@utility btn {
+    @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-controllo px-5 py-3 text-center text-base font-bold transition-colors;
+}
+
+@utility btn-primario {
+    @apply btn bg-fondo text-carta hover:bg-fondo-scuro;
+}
+
+@utility btn-segnale {
+    @apply btn bg-segnale text-fondo hover:bg-segnale-scuro;
+}
+
+@utility btn-outline {
+    @apply btn border-2 border-fondo text-fondo hover:bg-fondo hover:text-carta;
+}
+
+@utility campo {
+    @apply min-h-[52px] w-full rounded-controllo border border-bordo-input bg-input-bg px-4 py-3 text-base text-testo;
+
+    &:focus {
+        @apply border-fondo outline-none;
+        box-shadow: 0 0 0 3px var(--color-segnale);
+    }
+
+    &[aria-invalid='true'] {
+        @apply border-errore;
+    }
+}
+
+@layer components {
+    .prosa :where(p, ul, ol) {
+        margin-top: 1rem;
+    }
+
+    .prosa > :first-child {
+        margin-top: 0;
+    }
+
+    .prosa :where(ul) {
+        list-style: disc;
+        padding-left: 1.5rem;
+    }
+
+    .prosa :where(ol) {
+        list-style: decimal;
+        padding-left: 1.5rem;
+    }
+
+    .prosa :where(a) {
+        font-weight: 700;
+        text-decoration: underline;
+        text-underline-offset: 2px;
+    }
+
+    .prosa :where(h2, h3) {
+        margin-top: 2rem;
+        font-family: var(--font-display);
+        font-size: 1.5rem;
+        font-weight: 700;
+        line-height: 1.15;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
 }

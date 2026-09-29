@@ -1,20 +1,26 @@
 @php
+    $parking = app(\App\Settings\ParkingSettings::class);
     $organization = array_filter([
         '@context' => 'https://schema.org',
-        '@type' => 'Organization',
-        'name' => $settings->company_name ?: $settings->site_name,
+        '@type' => 'ParkingFacility',
+        'name' => $settings->site_name,
+        'legalName' => $settings->company_name,
+        'vatID' => $settings->vat_number,
+        'description' => $settings->default_meta_description,
         'url' => url('/'),
         'telephone' => $settings->phone,
         'email' => $settings->email,
+        'hasMap' => $parking->maps_url,
         'address' => $settings->operational_address ? [
             '@type' => 'PostalAddress',
             'streetAddress' => $settings->operational_address,
+            'addressCountry' => 'IT',
         ] : null,
         'sameAs' => array_values(array_filter([
             $settings->facebook_url,
             $settings->instagram_url,
             $settings->linkedin_url,
-        ])),
+        ])) ?: null,
     ]);
     $organizationJson = json_encode($organization, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
 
@@ -50,7 +56,7 @@
                 'name' => $item['question'] ?? '',
                 'acceptedAnswer' => [
                     '@type' => 'Answer',
-                    'text' => $item['answer'] ?? '',
+                    'text' => \App\Support\SiteText::fill($item['answer'] ?? ''),
                 ],
             ])->values()->all(),
         ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)

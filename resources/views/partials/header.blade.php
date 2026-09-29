@@ -1,45 +1,76 @@
 @php
-    $headerBg = $settings->header_bg_color ?: '#ffffff';
-    $headerText = $settings->header_text_color ?: '#0f172a';
-    $headerFontFamily = \App\Support\GoogleFonts::cssFamily($settings->header_font);
-    $logoUrl = \App\Support\Uploads::url($settings->header_logo);
+    use App\Support\SiteText;
+
+    $menuItems = $settings->menu_items ?? [];
+    $hasCta = $settings->header_cta_label && $settings->header_cta_url;
 @endphp
-<header style="background-color: {{ $headerBg }}; color: {{ $headerText }}; font-family: {{ $headerFontFamily }};" class="border-b border-black/10">
-    <div class="mx-auto flex max-w-6xl items-center justify-between gap-6 px-6 py-4">
-        <a href="{{ url('/') }}" class="flex items-center gap-2 text-lg font-semibold" style="color: {{ $headerText }};">
-            @if($logoUrl)
-                <img src="{{ $logoUrl }}" alt="{{ $settings->site_name }}" class="h-8 w-auto">
-            @else
-                {{ $settings->site_name }}
-            @endif
+<header class="sticky top-0 z-40 bg-fondo text-carta"
+        x-data="{ aperto: false }"
+        x-on:keydown.escape.window="if (aperto) { aperto = false; $refs.pulsanteMenu.focus() }"
+        x-on:click.outside="aperto = false">
+    <div class="contenitore flex h-[72px] items-center justify-between gap-6">
+        <a href="{{ url('/') }}" class="rounded-controllo">
+            <x-logo :name="$settings->site_name" />
         </a>
 
-        <nav class="flex items-center gap-6 text-sm font-medium">
-            @foreach($menuPages as $menuPage)
-                <a href="{{ $menuPage->is_homepage ? url('/') : url('/'.$menuPage->slug) }}" class="opacity-80 hover:opacity-100">
-                    {{ $menuPage->title }}
-                </a>
-            @endforeach
-        </nav>
+        @if(! empty($menuItems))
+            <nav aria-label="Principale" class="hidden lg:block">
+                <ul class="flex items-center gap-7">
+                    @foreach($menuItems as $item)
+                        <li>
+                            <a href="{{ $item['url'] }}" class="inline-flex min-h-11 items-center font-bold text-testo-chiaro hover:text-carta">{{ $item['label'] }}</a>
+                        </li>
+                    @endforeach
+                </ul>
+            </nav>
+        @endif
 
-        <div class="flex items-center gap-4 text-sm">
-            @if($settings->header_show_phone && $settings->phone)
-                <a href="tel:{{ $settings->phone }}" class="hidden font-medium opacity-90 hover:opacity-100 sm:inline">
+        <div class="hidden items-center gap-5 lg:flex">
+            @if($settings->phone)
+                <a href="{{ SiteText::telHref($settings->phone) }}" class="inline-flex min-h-11 items-center gap-2 font-bold hover:text-segnale">
+                    <x-icona name="phone" class="size-5" />
                     {{ $settings->phone }}
                 </a>
             @endif
-
-            @if($settings->header_show_hours && $settings->opening_hours)
-                <span class="hidden opacity-70 md:inline">{{ $settings->opening_hours }}</span>
-            @endif
-
-            @if($settings->header_cta_label && $settings->header_cta_url)
-                <a href="{{ $settings->header_cta_url }}"
-                   class="rounded-md px-4 py-2 text-sm font-semibold"
-                   style="background-color: {{ $headerText }}; color: {{ $headerBg }};">
-                    {{ $settings->header_cta_label }}
-                </a>
+            @if($hasCta)
+                <a href="{{ $settings->header_cta_url }}" class="btn-segnale">{{ $settings->header_cta_label }}</a>
             @endif
         </div>
+
+        <div class="flex items-center gap-2 lg:hidden">
+            @if($settings->phone)
+                <a href="{{ SiteText::telHref($settings->phone) }}" class="grid size-11 place-items-center rounded-controllo bg-segnale text-fondo">
+                    <x-icona name="phone" class="size-5" />
+                    <span class="sr-only">Chiama il {{ $settings->phone }}</span>
+                </a>
+            @endif
+            <button type="button" x-ref="pulsanteMenu"
+                    class="grid size-11 place-items-center rounded-controllo border border-white/25 hover:bg-fondo-scuro"
+                    aria-controls="menu-mobile" aria-label="Apri il menu"
+                    x-bind:aria-expanded="aperto ? 'true' : 'false'"
+                    x-bind:aria-label="aperto ? 'Chiudi il menu' : 'Apri il menu'"
+                    x-on:click="aperto = ! aperto">
+                <x-icona name="menu" class="size-6" x-show="! aperto" />
+                <x-icona name="x" class="size-6" x-show="aperto" x-cloak />
+            </button>
+        </div>
+    </div>
+
+    <div id="menu-mobile" class="border-t border-white/15 bg-fondo lg:hidden"
+         x-show="aperto" x-cloak
+         x-transition:enter="transition duration-150 ease-out" x-transition:enter-start="opacity-0 -translate-y-2"
+         x-transition:leave="transition duration-100 ease-in" x-transition:leave-end="opacity-0 -translate-y-2">
+        <nav aria-label="Menu mobile" class="contenitore py-4">
+            <ul class="divide-y divide-white/10">
+                @foreach($menuItems as $item)
+                    <li>
+                        <a href="{{ $item['url'] }}" x-on:click="aperto = false" class="flex min-h-12 items-center text-lg font-bold">{{ $item['label'] }}</a>
+                    </li>
+                @endforeach
+            </ul>
+            @if($hasCta)
+                <a href="{{ $settings->header_cta_url }}" x-on:click="aperto = false" class="btn-segnale mt-4 w-full">{{ $settings->header_cta_label }}</a>
+            @endif
+        </nav>
     </div>
 </header>
