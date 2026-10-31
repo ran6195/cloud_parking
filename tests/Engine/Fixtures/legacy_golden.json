@@ -1,0 +1,2557 @@
+{
+ "_source": "Dump legacy del 2026-10-31: prenotazioni web create dal 2026-10-20 (listini invariati). Solo date, servizi e importi.",
+ "_rules": {
+  "extra_day_cents": 1000,
+  "covered_parking_percentage": 40,
+  "key_drop_cents": 700,
+  "on_site_fee_cents": 100
+ },
+ "_skipped": {
+  "dati mancanti": 8,
+  "sconto incoerente o senza codice": 2,
+  "parcheggio diverso dalla formula": 1
+ },
+ "tariffs": {
+  "2026-01": {
+   "1": 1900,
+   "2": 2500,
+   "3": 3000,
+   "4": 3500,
+   "5": 4000,
+   "6": 4500,
+   "7": 5000,
+   "8": 5500,
+   "9": 6000,
+   "10": 6500,
+   "11": 7000,
+   "12": 7500,
+   "13": 8000,
+   "14": 8500,
+   "15": 9000,
+   "16": 9500,
+   "17": 10000,
+   "18": 10500,
+   "19": 11000,
+   "20": 11500,
+   "21": 12000,
+   "22": 12500,
+   "23": 13000,
+   "24": 13500,
+   "25": 14000,
+   "26": 14500,
+   "27": 15000,
+   "28": 15500,
+   "29": 16000,
+   "30": 16500
+  },
+  "2026-10": {
+   "1": 1700,
+   "2": 2200,
+   "3": 2700,
+   "4": 3200,
+   "5": 3700,
+   "6": 4200,
+   "7": 4700,
+   "8": 5200,
+   "9": 5700,
+   "10": 6200,
+   "11": 6700,
+   "12": 7200,
+   "13": 7800,
+   "14": 8500,
+   "15": 9000,
+   "16": 10000,
+   "17": 10500,
+   "18": 11000,
+   "19": 11500,
+   "20": 12000,
+   "21": 12500,
+   "22": 13000,
+   "23": 13500,
+   "24": 14000,
+   "25": 14500,
+   "26": 15000,
+   "27": 15500,
+   "28": 16000,
+   "29": 16500,
+   "30": 17000
+  },
+  "2026-11": {
+   "1": 1700,
+   "2": 2200,
+   "3": 2700,
+   "4": 3200,
+   "5": 3700,
+   "6": 4200,
+   "7": 4700,
+   "8": 5200,
+   "9": 5700,
+   "10": 6200,
+   "11": 6700,
+   "12": 7200,
+   "13": 7800,
+   "14": 8550,
+   "15": 9000,
+   "16": 9500,
+   "17": 10000,
+   "18": 10500,
+   "19": 11000,
+   "20": 11500,
+   "21": 12000,
+   "22": 12500,
+   "23": 13000,
+   "24": 13500,
+   "25": 14000,
+   "26": 14500,
+   "27": 15000,
+   "28": 15500,
+   "29": 16000,
+   "30": 16500
+  },
+  "2026-12": {
+   "1": 1900,
+   "2": 2500,
+   "3": 3500,
+   "4": 4500,
+   "5": 5000,
+   "6": 6500,
+   "7": 7000,
+   "8": 8000,
+   "9": 9000,
+   "10": 10000,
+   "11": 11000,
+   "12": 12000,
+   "13": 13000,
+   "14": 14000,
+   "15": 15000,
+   "16": 16000,
+   "17": 17000,
+   "18": 18000,
+   "19": 19000,
+   "20": 20000,
+   "21": 20500,
+   "22": 21000,
+   "23": 21500,
+   "24": 22000,
+   "25": 22500,
+   "26": 23000,
+   "27": 23500,
+   "28": 24000,
+   "29": 24500,
+   "30": 25000
+  }
+ },
+ "cases": [
+  {
+   "legacy_id": 21723,
+   "start": "2026-10-21 20:00",
+   "end": "2026-10-25 16:30",
+   "extras": [],
+   "payment_method": "online",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 4,
+    "parking_cents": 3200,
+    "subtotal_cents": 3200,
+    "total_cents": 3200
+   }
+  },
+  {
+   "legacy_id": 21728,
+   "start": "2026-10-20 09:00",
+   "end": "2026-10-21 19:00",
+   "extras": [],
+   "payment_method": "on_site",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 2,
+    "parking_cents": 2200,
+    "subtotal_cents": 2300,
+    "total_cents": 2300,
+    "on_site_fee_cents": 100
+   }
+  },
+  {
+   "legacy_id": 21731,
+   "start": "2026-12-18 18:00",
+   "end": "2026-12-27 20:00",
+   "extras": [],
+   "payment_method": "online",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 10,
+    "parking_cents": 10000,
+    "subtotal_cents": 10000,
+    "total_cents": 10000
+   }
+  },
+  {
+   "legacy_id": 21738,
+   "start": "2026-11-04 17:00",
+   "end": "2026-11-10 07:45",
+   "extras": [],
+   "payment_method": "online",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 6,
+    "parking_cents": 4200,
+    "subtotal_cents": 4200,
+    "total_cents": 4200
+   }
+  },
+  {
+   "legacy_id": 21739,
+   "start": "2026-11-04 17:00",
+   "end": "2026-11-10 07:45",
+   "extras": [],
+   "payment_method": "online",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 6,
+    "parking_cents": 4200,
+    "subtotal_cents": 4200,
+    "total_cents": 4200
+   }
+  },
+  {
+   "legacy_id": 21741,
+   "start": "2026-10-22 04:15",
+   "end": "2026-10-25 09:40",
+   "extras": [],
+   "payment_method": "online",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 4,
+    "parking_cents": 3200,
+    "subtotal_cents": 3200,
+    "total_cents": 3200
+   }
+  },
+  {
+   "legacy_id": 21742,
+   "start": "2026-11-04 17:00",
+   "end": "2026-11-10 07:45",
+   "extras": [],
+   "payment_method": "online",
+   "discount_percent": 10,
+   "expected": {
+    "billable_days": 6,
+    "parking_cents": 4200,
+    "subtotal_cents": 4200,
+    "total_cents": 3780
+   }
+  },
+  {
+   "legacy_id": 21743,
+   "start": "2026-11-12 16:45",
+   "end": "2026-11-17 07:45",
+   "extras": [],
+   "payment_method": "online",
+   "discount_percent": 10,
+   "expected": {
+    "billable_days": 5,
+    "parking_cents": 3700,
+    "subtotal_cents": 3700,
+    "total_cents": 3330
+   }
+  },
+  {
+   "legacy_id": 21745,
+   "start": "2026-10-20 21:00",
+   "end": "2026-10-21 21:00",
+   "extras": [],
+   "payment_method": "online",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 1,
+    "parking_cents": 1700,
+    "subtotal_cents": 1700,
+    "total_cents": 1700
+   }
+  },
+  {
+   "legacy_id": 21750,
+   "start": "2026-11-01 07:00",
+   "end": "2026-11-07 09:00",
+   "extras": [],
+   "payment_method": "on_site",
+   "discount_percent": 10,
+   "expected": {
+    "billable_days": 7,
+    "parking_cents": 4700,
+    "subtotal_cents": 4800,
+    "total_cents": 4320,
+    "on_site_fee_cents": 100
+   }
+  },
+  {
+   "legacy_id": 21751,
+   "start": "2026-11-07 04:00",
+   "end": "2026-11-08 22:30",
+   "extras": [],
+   "payment_method": "online",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 2,
+    "parking_cents": 2200,
+    "subtotal_cents": 2200,
+    "total_cents": 2200
+   }
+  },
+  {
+   "legacy_id": 21758,
+   "start": "2026-11-05 17:00",
+   "end": "2026-11-09 01:00",
+   "extras": [],
+   "payment_method": "online",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 4,
+    "parking_cents": 3200,
+    "subtotal_cents": 3200,
+    "total_cents": 3200
+   }
+  },
+  {
+   "legacy_id": 21763,
+   "start": "2026-10-29 10:00",
+   "end": "2026-11-05 12:30",
+   "extras": [],
+   "payment_method": "online",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 8,
+    "parking_cents": 5200,
+    "subtotal_cents": 5200,
+    "total_cents": 5200
+   }
+  },
+  {
+   "legacy_id": 21764,
+   "start": "2026-10-29 03:00",
+   "end": "2026-11-02 01:00",
+   "extras": [],
+   "payment_method": "on_site",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 4,
+    "parking_cents": 3200,
+    "subtotal_cents": 3300,
+    "total_cents": 3300,
+    "on_site_fee_cents": 100
+   }
+  },
+  {
+   "legacy_id": 21768,
+   "start": "2026-11-06 19:00",
+   "end": "2026-11-09 00:00",
+   "extras": [],
+   "payment_method": "online",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 3,
+    "parking_cents": 2700,
+    "subtotal_cents": 2700,
+    "total_cents": 2700
+   }
+  },
+  {
+   "legacy_id": 21769,
+   "start": "2026-10-23 04:10",
+   "end": "2026-11-01 17:00",
+   "extras": [],
+   "payment_method": "online",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 10,
+    "parking_cents": 6200,
+    "subtotal_cents": 6200,
+    "total_cents": 6200
+   }
+  },
+  {
+   "legacy_id": 21774,
+   "start": "2026-10-30 19:15",
+   "end": "2026-11-08 16:20",
+   "extras": [],
+   "payment_method": "online",
+   "discount_percent": 10,
+   "expected": {
+    "billable_days": 9,
+    "parking_cents": 5700,
+    "subtotal_cents": 5700,
+    "total_cents": 5130
+   }
+  },
+  {
+   "legacy_id": 21779,
+   "start": "2026-10-21 05:15",
+   "end": "2026-10-24 07:30",
+   "extras": [],
+   "payment_method": "online",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 4,
+    "parking_cents": 3200,
+    "subtotal_cents": 3200,
+    "total_cents": 3200
+   }
+  },
+  {
+   "legacy_id": 21780,
+   "start": "2026-10-23 18:30",
+   "end": "2026-10-25 18:30",
+   "extras": [],
+   "payment_method": "online",
+   "discount_percent": 10,
+   "expected": {
+    "billable_days": 2,
+    "parking_cents": 2200,
+    "subtotal_cents": 2200,
+    "total_cents": 1980
+   }
+  },
+  {
+   "legacy_id": 21782,
+   "start": "2026-10-22 19:00",
+   "end": "2026-10-26 11:30",
+   "extras": [],
+   "payment_method": "on_site",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 4,
+    "parking_cents": 3200,
+    "subtotal_cents": 3300,
+    "total_cents": 3300,
+    "on_site_fee_cents": 100
+   }
+  },
+  {
+   "legacy_id": 21788,
+   "start": "2026-10-27 10:00",
+   "end": "2026-10-29 00:35",
+   "extras": [],
+   "payment_method": "on_site",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 2,
+    "parking_cents": 2200,
+    "subtotal_cents": 2300,
+    "total_cents": 2300,
+    "on_site_fee_cents": 100
+   }
+  },
+  {
+   "legacy_id": 21795,
+   "start": "2026-10-23 04:10",
+   "end": "2026-11-02 10:45",
+   "extras": [],
+   "payment_method": "online",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 11,
+    "parking_cents": 6700,
+    "subtotal_cents": 6700,
+    "total_cents": 6700
+   }
+  },
+  {
+   "legacy_id": 21802,
+   "start": "2026-11-06 07:00",
+   "end": "2026-11-11 18:00",
+   "extras": [],
+   "payment_method": "online",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 6,
+    "parking_cents": 4200,
+    "subtotal_cents": 4200,
+    "total_cents": 4200
+   }
+  },
+  {
+   "legacy_id": 21808,
+   "start": "2026-11-07 05:30",
+   "end": "2026-11-08 20:00",
+   "extras": [],
+   "payment_method": "online",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 2,
+    "parking_cents": 2200,
+    "subtotal_cents": 2200,
+    "total_cents": 2200
+   }
+  },
+  {
+   "legacy_id": 21813,
+   "start": "2026-10-28 15:00",
+   "end": "2026-11-02 01:00",
+   "extras": [],
+   "payment_method": "online",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 5,
+    "parking_cents": 3700,
+    "subtotal_cents": 3700,
+    "total_cents": 3700
+   }
+  },
+  {
+   "legacy_id": 21814,
+   "start": "2026-10-28 15:00",
+   "end": "2026-11-01 23:30",
+   "extras": [],
+   "payment_method": "online",
+   "discount_percent": 10,
+   "expected": {
+    "billable_days": 5,
+    "parking_cents": 3700,
+    "subtotal_cents": 3700,
+    "total_cents": 3330
+   }
+  },
+  {
+   "legacy_id": 21817,
+   "start": "2026-10-27 12:30",
+   "end": "2026-10-30 20:35",
+   "extras": [],
+   "payment_method": "on_site",
+   "discount_percent": 10,
+   "expected": {
+    "billable_days": 4,
+    "parking_cents": 3200,
+    "subtotal_cents": 3300,
+    "total_cents": 2970,
+    "on_site_fee_cents": 100
+   }
+  },
+  {
+   "legacy_id": 21818,
+   "start": "2026-12-27 11:00",
+   "end": "2026-12-30 21:00",
+   "extras": [],
+   "payment_method": "online",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 4,
+    "parking_cents": 4500,
+    "subtotal_cents": 4500,
+    "total_cents": 4500
+   }
+  },
+  {
+   "legacy_id": 21820,
+   "start": "2026-10-23 06:45",
+   "end": "2026-10-26 08:00",
+   "extras": [],
+   "payment_method": "on_site",
+   "discount_percent": 10,
+   "expected": {
+    "billable_days": 4,
+    "parking_cents": 3200,
+    "subtotal_cents": 3300,
+    "total_cents": 2970,
+    "on_site_fee_cents": 100
+   }
+  },
+  {
+   "legacy_id": 21821,
+   "start": "2026-10-21 20:30",
+   "end": "2026-10-25 23:59",
+   "extras": [],
+   "payment_method": "online",
+   "discount_percent": 10,
+   "expected": {
+    "billable_days": 5,
+    "parking_cents": 3700,
+    "subtotal_cents": 3700,
+    "total_cents": 3330
+   }
+  },
+  {
+   "legacy_id": 21828,
+   "start": "2026-12-04 19:15",
+   "end": "2026-12-10 19:15",
+   "extras": [],
+   "payment_method": "online",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 6,
+    "parking_cents": 6500,
+    "subtotal_cents": 6500,
+    "total_cents": 6500
+   }
+  },
+  {
+   "legacy_id": 21831,
+   "start": "2026-12-22 04:30",
+   "end": "2026-12-27 17:15",
+   "extras": [],
+   "payment_method": "online",
+   "discount_percent": 10,
+   "expected": {
+    "billable_days": 6,
+    "parking_cents": 6500,
+    "subtotal_cents": 6500,
+    "total_cents": 5850
+   }
+  },
+  {
+   "legacy_id": 21834,
+   "start": "2026-11-28 10:00",
+   "end": "2026-12-03 16:29",
+   "extras": [],
+   "payment_method": "online",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 6,
+    "parking_cents": 4200,
+    "subtotal_cents": 4200,
+    "total_cents": 4200
+   }
+  },
+  {
+   "legacy_id": 21837,
+   "start": "2026-10-22 10:00",
+   "end": "2026-10-26 17:00",
+   "extras": [],
+   "payment_method": "online",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 5,
+    "parking_cents": 3700,
+    "subtotal_cents": 3700,
+    "total_cents": 3700
+   }
+  },
+  {
+   "legacy_id": 21838,
+   "start": "2026-10-22 05:00",
+   "end": "2026-10-25 16:00",
+   "extras": [],
+   "payment_method": "on_site",
+   "discount_percent": 10,
+   "expected": {
+    "billable_days": 4,
+    "parking_cents": 3200,
+    "subtotal_cents": 3300,
+    "total_cents": 2970,
+    "on_site_fee_cents": 100
+   }
+  },
+  {
+   "legacy_id": 21840,
+   "start": "2026-10-23 12:00",
+   "end": "2026-10-25 21:00",
+   "extras": [],
+   "payment_method": "online",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 3,
+    "parking_cents": 2700,
+    "subtotal_cents": 2700,
+    "total_cents": 2700
+   }
+  },
+  {
+   "legacy_id": 21844,
+   "start": "2026-11-07 07:00",
+   "end": "2026-11-09 23:00",
+   "extras": [],
+   "payment_method": "online",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 3,
+    "parking_cents": 2700,
+    "subtotal_cents": 2700,
+    "total_cents": 2700
+   }
+  },
+  {
+   "legacy_id": 21845,
+   "start": "2026-10-22 17:00",
+   "end": "2026-10-24 21:00",
+   "extras": [],
+   "payment_method": "online",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 3,
+    "parking_cents": 2700,
+    "subtotal_cents": 2700,
+    "total_cents": 2700
+   }
+  },
+  {
+   "legacy_id": 21848,
+   "start": "2026-10-27 18:55",
+   "end": "2026-11-01 18:30",
+   "extras": [],
+   "payment_method": "online",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 5,
+    "parking_cents": 3700,
+    "subtotal_cents": 3700,
+    "total_cents": 3700
+   }
+  },
+  {
+   "legacy_id": 21851,
+   "start": "2026-10-22 17:00",
+   "end": "2026-10-24 21:00",
+   "extras": [],
+   "payment_method": "online",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 3,
+    "parking_cents": 2700,
+    "subtotal_cents": 2700,
+    "total_cents": 2700
+   }
+  },
+  {
+   "legacy_id": 21854,
+   "start": "2026-11-12 04:00",
+   "end": "2026-11-14 23:00",
+   "extras": [],
+   "payment_method": "online",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 3,
+    "parking_cents": 2700,
+    "subtotal_cents": 2700,
+    "total_cents": 2700
+   }
+  },
+  {
+   "legacy_id": 21862,
+   "start": "2026-10-22 16:48",
+   "end": "2026-10-24 21:00",
+   "extras": [],
+   "payment_method": "online",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 3,
+    "parking_cents": 2700,
+    "subtotal_cents": 2700,
+    "total_cents": 2700
+   }
+  },
+  {
+   "legacy_id": 21871,
+   "start": "2026-10-25 03:30",
+   "end": "2026-10-28 23:00",
+   "extras": [
+    "covered_parking"
+   ],
+   "payment_method": "online",
+   "discount_percent": 10,
+   "expected": {
+    "billable_days": 4,
+    "parking_cents": 3200,
+    "subtotal_cents": 4480,
+    "total_cents": 4032,
+    "covered_parking_cents": 1280
+   }
+  },
+  {
+   "legacy_id": 21872,
+   "start": "2026-10-23 04:00",
+   "end": "2026-10-26 08:00",
+   "extras": [],
+   "payment_method": "on_site",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 4,
+    "parking_cents": 3200,
+    "subtotal_cents": 3300,
+    "total_cents": 3300,
+    "on_site_fee_cents": 100
+   }
+  },
+  {
+   "legacy_id": 21873,
+   "start": "2026-12-27 04:00",
+   "end": "2026-12-30 20:15",
+   "extras": [],
+   "payment_method": "on_site",
+   "discount_percent": 10,
+   "expected": {
+    "billable_days": 4,
+    "parking_cents": 4500,
+    "subtotal_cents": 4600,
+    "total_cents": 4140,
+    "on_site_fee_cents": 100
+   }
+  },
+  {
+   "legacy_id": 21877,
+   "start": "2026-10-23 05:00",
+   "end": "2026-10-25 22:00",
+   "extras": [],
+   "payment_method": "on_site",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 3,
+    "parking_cents": 2700,
+    "subtotal_cents": 2800,
+    "total_cents": 2800,
+    "on_site_fee_cents": 100
+   }
+  },
+  {
+   "legacy_id": 21880,
+   "start": "2026-11-14 08:30",
+   "end": "2026-11-21 21:00",
+   "extras": [],
+   "payment_method": "on_site",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 8,
+    "parking_cents": 5200,
+    "subtotal_cents": 5300,
+    "total_cents": 5300,
+    "on_site_fee_cents": 100
+   }
+  },
+  {
+   "legacy_id": 21881,
+   "start": "2026-10-23 11:00",
+   "end": "2026-10-28 11:00",
+   "extras": [],
+   "payment_method": "on_site",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 5,
+    "parking_cents": 3700,
+    "subtotal_cents": 3800,
+    "total_cents": 3800,
+    "on_site_fee_cents": 100
+   }
+  },
+  {
+   "legacy_id": 21884,
+   "start": "2026-10-30 12:00",
+   "end": "2026-11-01 23:25",
+   "extras": [],
+   "payment_method": "online",
+   "discount_percent": 10,
+   "expected": {
+    "billable_days": 3,
+    "parking_cents": 2700,
+    "subtotal_cents": 2700,
+    "total_cents": 2430
+   }
+  },
+  {
+   "legacy_id": 21886,
+   "start": "2026-10-23 13:00",
+   "end": "2026-11-10 21:20",
+   "extras": [],
+   "payment_method": "on_site",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 19,
+    "parking_cents": 11500,
+    "subtotal_cents": 11600,
+    "total_cents": 11600,
+    "on_site_fee_cents": 100
+   }
+  },
+  {
+   "legacy_id": 21889,
+   "start": "2026-10-23 15:00",
+   "end": "2026-10-25 22:00",
+   "extras": [],
+   "payment_method": "on_site",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 3,
+    "parking_cents": 2700,
+    "subtotal_cents": 2800,
+    "total_cents": 2800,
+    "on_site_fee_cents": 100
+   }
+  },
+  {
+   "legacy_id": 21890,
+   "start": "2026-10-31 14:45",
+   "end": "2026-11-03 23:59",
+   "extras": [
+    "key_drop"
+   ],
+   "payment_method": "online",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 4,
+    "parking_cents": 3200,
+    "subtotal_cents": 3900,
+    "total_cents": 3900,
+    "key_drop_cents": 700
+   }
+  },
+  {
+   "legacy_id": 21891,
+   "start": "2026-10-23 17:00",
+   "end": "2026-10-26 14:20",
+   "extras": [],
+   "payment_method": "on_site",
+   "discount_percent": 10,
+   "expected": {
+    "billable_days": 3,
+    "parking_cents": 2700,
+    "subtotal_cents": 2800,
+    "total_cents": 2520,
+    "on_site_fee_cents": 100
+   }
+  },
+  {
+   "legacy_id": 21893,
+   "start": "2026-11-16 04:00",
+   "end": "2026-11-22 19:00",
+   "extras": [],
+   "payment_method": "on_site",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 7,
+    "parking_cents": 4700,
+    "subtotal_cents": 4800,
+    "total_cents": 4800,
+    "on_site_fee_cents": 100
+   }
+  },
+  {
+   "legacy_id": 21896,
+   "start": "2026-11-12 04:00",
+   "end": "2026-11-14 23:00",
+   "extras": [],
+   "payment_method": "online",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 3,
+    "parking_cents": 2700,
+    "subtotal_cents": 2700,
+    "total_cents": 2700
+   }
+  },
+  {
+   "legacy_id": 21900,
+   "start": "2026-11-07 15:30",
+   "end": "2026-11-10 16:00",
+   "extras": [],
+   "payment_method": "online",
+   "discount_percent": 10,
+   "expected": {
+    "billable_days": 4,
+    "parking_cents": 3200,
+    "subtotal_cents": 3200,
+    "total_cents": 2880
+   }
+  },
+  {
+   "legacy_id": 21904,
+   "start": "2026-10-31 03:30",
+   "end": "2026-11-03 21:15",
+   "extras": [],
+   "payment_method": "online",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 4,
+    "parking_cents": 3200,
+    "subtotal_cents": 3200,
+    "total_cents": 3200
+   }
+  },
+  {
+   "legacy_id": 21906,
+   "start": "2026-10-24 07:00",
+   "end": "2026-10-26 06:00",
+   "extras": [],
+   "payment_method": "on_site",
+   "discount_percent": 10,
+   "expected": {
+    "billable_days": 2,
+    "parking_cents": 2200,
+    "subtotal_cents": 2300,
+    "total_cents": 2070,
+    "on_site_fee_cents": 100
+   }
+  },
+  {
+   "legacy_id": 21909,
+   "start": "2026-11-05 12:00",
+   "end": "2026-11-09 14:00",
+   "extras": [],
+   "payment_method": "on_site",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 5,
+    "parking_cents": 3700,
+    "subtotal_cents": 3800,
+    "total_cents": 3800,
+    "on_site_fee_cents": 100
+   }
+  },
+  {
+   "legacy_id": 21910,
+   "start": "2026-11-05 12:00",
+   "end": "2026-11-09 14:00",
+   "extras": [],
+   "payment_method": "on_site",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 5,
+    "parking_cents": 3700,
+    "subtotal_cents": 3800,
+    "total_cents": 3800,
+    "on_site_fee_cents": 100
+   }
+  },
+  {
+   "legacy_id": 21914,
+   "start": "2026-10-29 12:00",
+   "end": "2026-11-01 15:00",
+   "extras": [],
+   "payment_method": "online",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 4,
+    "parking_cents": 3200,
+    "subtotal_cents": 3200,
+    "total_cents": 3200
+   }
+  },
+  {
+   "legacy_id": 21916,
+   "start": "2026-10-31 09:00",
+   "end": "2026-11-04 14:20",
+   "extras": [],
+   "payment_method": "on_site",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 5,
+    "parking_cents": 3700,
+    "subtotal_cents": 3800,
+    "total_cents": 3800,
+    "on_site_fee_cents": 100
+   }
+  },
+  {
+   "legacy_id": 21919,
+   "start": "2026-10-30 04:00",
+   "end": "2026-11-03 21:10",
+   "extras": [],
+   "payment_method": "on_site",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 5,
+    "parking_cents": 3700,
+    "subtotal_cents": 3800,
+    "total_cents": 3800,
+    "on_site_fee_cents": 100
+   }
+  },
+  {
+   "legacy_id": 21922,
+   "start": "2026-11-05 12:00",
+   "end": "2026-11-09 14:00",
+   "extras": [],
+   "payment_method": "on_site",
+   "discount_percent": 10,
+   "expected": {
+    "billable_days": 5,
+    "parking_cents": 3700,
+    "subtotal_cents": 3800,
+    "total_cents": 3420,
+    "on_site_fee_cents": 100
+   }
+  },
+  {
+   "legacy_id": 21924,
+   "start": "2026-10-30 06:00",
+   "end": "2026-11-03 12:30",
+   "extras": [
+    "covered_parking"
+   ],
+   "payment_method": "on_site",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 5,
+    "parking_cents": 3700,
+    "subtotal_cents": 5280,
+    "total_cents": 5280,
+    "covered_parking_cents": 1480,
+    "on_site_fee_cents": 100
+   }
+  },
+  {
+   "legacy_id": 21928,
+   "start": "2026-10-30 13:30",
+   "end": "2026-11-02 18:45",
+   "extras": [],
+   "payment_method": "online",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 4,
+    "parking_cents": 3200,
+    "subtotal_cents": 3200,
+    "total_cents": 3200
+   }
+  },
+  {
+   "legacy_id": 21932,
+   "start": "2026-10-24 13:30",
+   "end": "2026-10-30 16:30",
+   "extras": [],
+   "payment_method": "on_site",
+   "discount_percent": 10,
+   "expected": {
+    "billable_days": 7,
+    "parking_cents": 4700,
+    "subtotal_cents": 4800,
+    "total_cents": 4320,
+    "on_site_fee_cents": 100
+   }
+  },
+  {
+   "legacy_id": 21939,
+   "start": "2026-11-01 03:00",
+   "end": "2026-11-08 20:00",
+   "extras": [],
+   "payment_method": "on_site",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 8,
+    "parking_cents": 5200,
+    "subtotal_cents": 5300,
+    "total_cents": 5300,
+    "on_site_fee_cents": 100
+   }
+  },
+  {
+   "legacy_id": 21941,
+   "start": "2026-11-04 13:00",
+   "end": "2026-11-07 16:00",
+   "extras": [],
+   "payment_method": "online",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 4,
+    "parking_cents": 3200,
+    "subtotal_cents": 3200,
+    "total_cents": 3200
+   }
+  },
+  {
+   "legacy_id": 21947,
+   "start": "2026-11-20 12:40",
+   "end": "2026-11-22 22:00",
+   "extras": [],
+   "payment_method": "on_site",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 3,
+    "parking_cents": 2700,
+    "subtotal_cents": 2800,
+    "total_cents": 2800,
+    "on_site_fee_cents": 100
+   }
+  },
+  {
+   "legacy_id": 21949,
+   "start": "2026-10-29 13:00",
+   "end": "2026-11-01 23:00",
+   "extras": [],
+   "payment_method": "online",
+   "discount_percent": 10,
+   "expected": {
+    "billable_days": 4,
+    "parking_cents": 3200,
+    "subtotal_cents": 3200,
+    "total_cents": 2880
+   }
+  },
+  {
+   "legacy_id": 21951,
+   "start": "2026-11-07 10:00",
+   "end": "2026-11-17 13:00",
+   "extras": [],
+   "payment_method": "on_site",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 11,
+    "parking_cents": 6700,
+    "subtotal_cents": 6800,
+    "total_cents": 6800,
+    "on_site_fee_cents": 100
+   }
+  },
+  {
+   "legacy_id": 21955,
+   "start": "2026-10-25 17:30",
+   "end": "2026-10-28 19:00",
+   "extras": [],
+   "payment_method": "online",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 4,
+    "parking_cents": 3200,
+    "subtotal_cents": 3200,
+    "total_cents": 3200
+   }
+  },
+  {
+   "legacy_id": 21956,
+   "start": "2026-10-25 19:30",
+   "end": "2026-10-29 19:30",
+   "extras": [],
+   "payment_method": "on_site",
+   "discount_percent": 10,
+   "expected": {
+    "billable_days": 4,
+    "parking_cents": 3200,
+    "subtotal_cents": 3300,
+    "total_cents": 2970,
+    "on_site_fee_cents": 100
+   }
+  },
+  {
+   "legacy_id": 21958,
+   "start": "2026-10-26 04:00",
+   "end": "2026-10-27 10:00",
+   "extras": [],
+   "payment_method": "on_site",
+   "discount_percent": 10,
+   "expected": {
+    "billable_days": 2,
+    "parking_cents": 2200,
+    "subtotal_cents": 2300,
+    "total_cents": 2070,
+    "on_site_fee_cents": 100
+   }
+  },
+  {
+   "legacy_id": 21959,
+   "start": "2026-11-20 07:00",
+   "end": "2026-11-22 18:00",
+   "extras": [],
+   "payment_method": "on_site",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 3,
+    "parking_cents": 2700,
+    "subtotal_cents": 2800,
+    "total_cents": 2800,
+    "on_site_fee_cents": 100
+   }
+  },
+  {
+   "legacy_id": 21961,
+   "start": "2026-10-27 18:55",
+   "end": "2026-11-01 18:00",
+   "extras": [],
+   "payment_method": "online",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 5,
+    "parking_cents": 3700,
+    "subtotal_cents": 3700,
+    "total_cents": 3700
+   }
+  },
+  {
+   "legacy_id": 21969,
+   "start": "2026-11-14 18:00",
+   "end": "2026-11-17 19:00",
+   "extras": [],
+   "payment_method": "online",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 4,
+    "parking_cents": 3200,
+    "subtotal_cents": 3200,
+    "total_cents": 3200
+   }
+  },
+  {
+   "legacy_id": 21971,
+   "start": "2026-11-14 09:00",
+   "end": "2026-11-17 22:00",
+   "extras": [],
+   "payment_method": "online",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 4,
+    "parking_cents": 3200,
+    "subtotal_cents": 3200,
+    "total_cents": 3200
+   }
+  },
+  {
+   "legacy_id": 21977,
+   "start": "2026-11-21 11:30",
+   "end": "2026-11-24 20:30",
+   "extras": [],
+   "payment_method": "online",
+   "discount_percent": 10,
+   "expected": {
+    "billable_days": 4,
+    "parking_cents": 3200,
+    "subtotal_cents": 3200,
+    "total_cents": 2880
+   }
+  },
+  {
+   "legacy_id": 21979,
+   "start": "2026-10-26 12:00",
+   "end": "2026-10-29 18:00",
+   "extras": [],
+   "payment_method": "online",
+   "discount_percent": 10,
+   "expected": {
+    "billable_days": 4,
+    "parking_cents": 3200,
+    "subtotal_cents": 3200,
+    "total_cents": 2880
+   }
+  },
+  {
+   "legacy_id": 21980,
+   "start": "2026-10-26 13:00",
+   "end": "2026-10-28 19:00",
+   "extras": [],
+   "payment_method": "online",
+   "discount_percent": 10,
+   "expected": {
+    "billable_days": 3,
+    "parking_cents": 2700,
+    "subtotal_cents": 2700,
+    "total_cents": 2430
+   }
+  },
+  {
+   "legacy_id": 21984,
+   "start": "2026-11-05 16:30",
+   "end": "2026-11-09 00:30",
+   "extras": [],
+   "payment_method": "online",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 4,
+    "parking_cents": 3200,
+    "subtotal_cents": 3200,
+    "total_cents": 3200
+   }
+  },
+  {
+   "legacy_id": 21985,
+   "start": "2026-11-05 16:30",
+   "end": "2026-11-09 00:30",
+   "extras": [],
+   "payment_method": "online",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 4,
+    "parking_cents": 3200,
+    "subtotal_cents": 3200,
+    "total_cents": 3200
+   }
+  },
+  {
+   "legacy_id": 21986,
+   "start": "2026-11-05 16:30",
+   "end": "2026-11-09 00:30",
+   "extras": [],
+   "payment_method": "online",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 4,
+    "parking_cents": 3200,
+    "subtotal_cents": 3200,
+    "total_cents": 3200
+   }
+  },
+  {
+   "legacy_id": 21988,
+   "start": "2026-10-26 09:00",
+   "end": "2026-11-06 16:30",
+   "extras": [],
+   "payment_method": "on_site",
+   "discount_percent": 10,
+   "expected": {
+    "billable_days": 12,
+    "parking_cents": 7200,
+    "subtotal_cents": 7300,
+    "total_cents": 6570,
+    "on_site_fee_cents": 100
+   }
+  },
+  {
+   "legacy_id": 21997,
+   "start": "2026-10-28 19:00",
+   "end": "2026-11-01 21:00",
+   "extras": [],
+   "payment_method": "on_site",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 5,
+    "parking_cents": 3700,
+    "subtotal_cents": 3800,
+    "total_cents": 3800,
+    "on_site_fee_cents": 100
+   }
+  },
+  {
+   "legacy_id": 21998,
+   "start": "2026-10-30 04:30",
+   "end": "2026-11-02 20:30",
+   "extras": [],
+   "payment_method": "online",
+   "discount_percent": 10,
+   "expected": {
+    "billable_days": 4,
+    "parking_cents": 3200,
+    "subtotal_cents": 3200,
+    "total_cents": 2880
+   }
+  },
+  {
+   "legacy_id": 22000,
+   "start": "2026-10-28 08:00",
+   "end": "2026-10-31 16:00",
+   "extras": [],
+   "payment_method": "online",
+   "discount_percent": 10,
+   "expected": {
+    "billable_days": 4,
+    "parking_cents": 3200,
+    "subtotal_cents": 3200,
+    "total_cents": 2880
+   }
+  },
+  {
+   "legacy_id": 22004,
+   "start": "2026-11-13 08:00",
+   "end": "2026-11-17 13:00",
+   "extras": [],
+   "payment_method": "on_site",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 5,
+    "parking_cents": 3700,
+    "subtotal_cents": 3800,
+    "total_cents": 3800,
+    "on_site_fee_cents": 100
+   }
+  },
+  {
+   "legacy_id": 22007,
+   "start": "2026-10-27 17:30",
+   "end": "2026-11-02 08:00",
+   "extras": [],
+   "payment_method": "online",
+   "discount_percent": 10,
+   "expected": {
+    "billable_days": 6,
+    "parking_cents": 4200,
+    "subtotal_cents": 4200,
+    "total_cents": 3780
+   }
+  },
+  {
+   "legacy_id": 22010,
+   "start": "2026-11-03 06:00",
+   "end": "2026-11-04 23:00",
+   "extras": [],
+   "payment_method": "on_site",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 2,
+    "parking_cents": 2200,
+    "subtotal_cents": 2300,
+    "total_cents": 2300,
+    "on_site_fee_cents": 100
+   }
+  },
+  {
+   "legacy_id": 22011,
+   "start": "2026-12-04 19:00",
+   "end": "2026-12-10 18:00",
+   "extras": [],
+   "payment_method": "online",
+   "discount_percent": 10,
+   "expected": {
+    "billable_days": 6,
+    "parking_cents": 6500,
+    "subtotal_cents": 6500,
+    "total_cents": 5850
+   }
+  },
+  {
+   "legacy_id": 22014,
+   "start": "2026-10-28 16:00",
+   "end": "2026-11-02 09:30",
+   "extras": [],
+   "payment_method": "on_site",
+   "discount_percent": 10,
+   "expected": {
+    "billable_days": 5,
+    "parking_cents": 3700,
+    "subtotal_cents": 3800,
+    "total_cents": 3420,
+    "on_site_fee_cents": 100
+   }
+  },
+  {
+   "legacy_id": 22017,
+   "start": "2026-11-01 10:15",
+   "end": "2026-11-08 12:40",
+   "extras": [],
+   "payment_method": "online",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 8,
+    "parking_cents": 5200,
+    "subtotal_cents": 5200,
+    "total_cents": 5200
+   }
+  },
+  {
+   "legacy_id": 22018,
+   "start": "2026-11-01 10:15",
+   "end": "2026-11-08 12:40",
+   "extras": [],
+   "payment_method": "on_site",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 8,
+    "parking_cents": 5200,
+    "subtotal_cents": 5300,
+    "total_cents": 5300,
+    "on_site_fee_cents": 100
+   }
+  },
+  {
+   "legacy_id": 22019,
+   "start": "2026-11-13 14:00",
+   "end": "2026-11-16 16:00",
+   "extras": [],
+   "payment_method": "on_site",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 4,
+    "parking_cents": 3200,
+    "subtotal_cents": 3300,
+    "total_cents": 3300,
+    "on_site_fee_cents": 100
+   }
+  },
+  {
+   "legacy_id": 22027,
+   "start": "2026-10-31 15:00",
+   "end": "2026-11-03 00:30",
+   "extras": [],
+   "payment_method": "online",
+   "discount_percent": 10,
+   "expected": {
+    "billable_days": 3,
+    "parking_cents": 2700,
+    "subtotal_cents": 2700,
+    "total_cents": 2430
+   }
+  },
+  {
+   "legacy_id": 22030,
+   "start": "2026-10-30 04:45",
+   "end": "2026-11-02 19:00",
+   "extras": [],
+   "payment_method": "online",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 4,
+    "parking_cents": 3200,
+    "subtotal_cents": 3200,
+    "total_cents": 3200
+   }
+  },
+  {
+   "legacy_id": 22033,
+   "start": "2026-10-28 17:00",
+   "end": "2026-10-30 16:00",
+   "extras": [],
+   "payment_method": "on_site",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 2,
+    "parking_cents": 2200,
+    "subtotal_cents": 2300,
+    "total_cents": 2300,
+    "on_site_fee_cents": 100
+   }
+  },
+  {
+   "legacy_id": 22038,
+   "start": "2026-10-29 12:30",
+   "end": "2026-11-01 15:00",
+   "extras": [],
+   "payment_method": "online",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 4,
+    "parking_cents": 3200,
+    "subtotal_cents": 3200,
+    "total_cents": 3200
+   }
+  },
+  {
+   "legacy_id": 22039,
+   "start": "2026-11-20 15:30",
+   "end": "2026-11-22 17:00",
+   "extras": [],
+   "payment_method": "online",
+   "discount_percent": 10,
+   "expected": {
+    "billable_days": 3,
+    "parking_cents": 2700,
+    "subtotal_cents": 2700,
+    "total_cents": 2430
+   }
+  },
+  {
+   "legacy_id": 22040,
+   "start": "2026-11-20 15:30",
+   "end": "2026-11-22 17:00",
+   "extras": [],
+   "payment_method": "online",
+   "discount_percent": 10,
+   "expected": {
+    "billable_days": 3,
+    "parking_cents": 2700,
+    "subtotal_cents": 2700,
+    "total_cents": 2430
+   }
+  },
+  {
+   "legacy_id": 22041,
+   "start": "2026-11-20 15:30",
+   "end": "2026-11-22 17:00",
+   "extras": [],
+   "payment_method": "online",
+   "discount_percent": 10,
+   "expected": {
+    "billable_days": 3,
+    "parking_cents": 2700,
+    "subtotal_cents": 2700,
+    "total_cents": 2430
+   }
+  },
+  {
+   "legacy_id": 22042,
+   "start": "2026-11-20 15:30",
+   "end": "2026-11-22 17:00",
+   "extras": [],
+   "payment_method": "online",
+   "discount_percent": 10,
+   "expected": {
+    "billable_days": 3,
+    "parking_cents": 2700,
+    "subtotal_cents": 2700,
+    "total_cents": 2430
+   }
+  },
+  {
+   "legacy_id": 22043,
+   "start": "2026-11-20 15:30",
+   "end": "2026-11-22 17:00",
+   "extras": [],
+   "payment_method": "online",
+   "discount_percent": 10,
+   "expected": {
+    "billable_days": 3,
+    "parking_cents": 2700,
+    "subtotal_cents": 2700,
+    "total_cents": 2430
+   }
+  },
+  {
+   "legacy_id": 22044,
+   "start": "2026-11-20 15:30",
+   "end": "2026-11-22 17:00",
+   "extras": [],
+   "payment_method": "online",
+   "discount_percent": 10,
+   "expected": {
+    "billable_days": 3,
+    "parking_cents": 2700,
+    "subtotal_cents": 2700,
+    "total_cents": 2430
+   }
+  },
+  {
+   "legacy_id": 22045,
+   "start": "2026-11-20 15:45",
+   "end": "2026-11-22 17:00",
+   "extras": [],
+   "payment_method": "online",
+   "discount_percent": 10,
+   "expected": {
+    "billable_days": 3,
+    "parking_cents": 2700,
+    "subtotal_cents": 2700,
+    "total_cents": 2430
+   }
+  },
+  {
+   "legacy_id": 22046,
+   "start": "2026-12-22 15:45",
+   "end": "2026-12-27 17:00",
+   "extras": [],
+   "payment_method": "online",
+   "discount_percent": 10,
+   "expected": {
+    "billable_days": 6,
+    "parking_cents": 6500,
+    "subtotal_cents": 6500,
+    "total_cents": 5850
+   }
+  },
+  {
+   "legacy_id": 22047,
+   "start": "2026-12-22 15:45",
+   "end": "2026-12-27 17:00",
+   "extras": [],
+   "payment_method": "online",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 6,
+    "parking_cents": 6500,
+    "subtotal_cents": 6500,
+    "total_cents": 6500
+   }
+  },
+  {
+   "legacy_id": 22051,
+   "start": "2026-10-28 20:00",
+   "end": "2026-11-01 20:30",
+   "extras": [],
+   "payment_method": "on_site",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 5,
+    "parking_cents": 3700,
+    "subtotal_cents": 3800,
+    "total_cents": 3800,
+    "on_site_fee_cents": 100
+   }
+  },
+  {
+   "legacy_id": 22054,
+   "start": "2026-11-06 16:00",
+   "end": "2026-11-07 23:55",
+   "extras": [],
+   "payment_method": "on_site",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 2,
+    "parking_cents": 2200,
+    "subtotal_cents": 2300,
+    "total_cents": 2300,
+    "on_site_fee_cents": 100
+   }
+  },
+  {
+   "legacy_id": 22055,
+   "start": "2026-11-02 04:30",
+   "end": "2026-11-04 15:00",
+   "extras": [],
+   "payment_method": "on_site",
+   "discount_percent": 10,
+   "expected": {
+    "billable_days": 3,
+    "parking_cents": 2700,
+    "subtotal_cents": 2800,
+    "total_cents": 2520,
+    "on_site_fee_cents": 100
+   }
+  },
+  {
+   "legacy_id": 22057,
+   "start": "2026-11-05 12:45",
+   "end": "2026-11-07 20:30",
+   "extras": [],
+   "payment_method": "online",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 3,
+    "parking_cents": 2700,
+    "subtotal_cents": 2700,
+    "total_cents": 2700
+   }
+  },
+  {
+   "legacy_id": 22058,
+   "start": "2026-10-30 05:00",
+   "end": "2026-11-01 19:00",
+   "extras": [],
+   "payment_method": "online",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 3,
+    "parking_cents": 2700,
+    "subtotal_cents": 2700,
+    "total_cents": 2700
+   }
+  },
+  {
+   "legacy_id": 22059,
+   "start": "2026-12-26 04:00",
+   "end": "2027-01-02 01:00",
+   "extras": [],
+   "payment_method": "online",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 7,
+    "parking_cents": 7000,
+    "subtotal_cents": 7000,
+    "total_cents": 7000
+   }
+  },
+  {
+   "legacy_id": 22060,
+   "start": "2026-10-31 19:07",
+   "end": "2026-11-02 08:00",
+   "extras": [],
+   "payment_method": "on_site",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 2,
+    "parking_cents": 2200,
+    "subtotal_cents": 2300,
+    "total_cents": 2300,
+    "on_site_fee_cents": 100
+   }
+  },
+  {
+   "legacy_id": 22063,
+   "start": "2026-11-02 03:00",
+   "end": "2026-11-17 20:00",
+   "extras": [
+    "key_drop"
+   ],
+   "payment_method": "on_site",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 16,
+    "parking_cents": 9500,
+    "subtotal_cents": 10300,
+    "total_cents": 10300,
+    "key_drop_cents": 700,
+    "on_site_fee_cents": 100
+   }
+  },
+  {
+   "legacy_id": 22065,
+   "start": "2027-01-04 05:00",
+   "end": "2027-01-09 19:00",
+   "extras": [],
+   "payment_method": "on_site",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 6,
+    "parking_cents": 4500,
+    "subtotal_cents": 4600,
+    "total_cents": 4600,
+    "on_site_fee_cents": 100
+   }
+  },
+  {
+   "legacy_id": 22066,
+   "start": "2026-11-02 12:00",
+   "end": "2026-11-04 17:00",
+   "extras": [],
+   "payment_method": "on_site",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 3,
+    "parking_cents": 2700,
+    "subtotal_cents": 2800,
+    "total_cents": 2800,
+    "on_site_fee_cents": 100
+   }
+  },
+  {
+   "legacy_id": 22074,
+   "start": "2026-10-29 17:00",
+   "end": "2026-11-01 23:45",
+   "extras": [],
+   "payment_method": "online",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 4,
+    "parking_cents": 3200,
+    "subtotal_cents": 3200,
+    "total_cents": 3200
+   }
+  },
+  {
+   "legacy_id": 22075,
+   "start": "2026-11-13 08:00",
+   "end": "2026-11-15 22:00",
+   "extras": [],
+   "payment_method": "online",
+   "discount_percent": 10,
+   "expected": {
+    "billable_days": 3,
+    "parking_cents": 2700,
+    "subtotal_cents": 2700,
+    "total_cents": 2430
+   }
+  },
+  {
+   "legacy_id": 22076,
+   "start": "2026-10-30 06:30",
+   "end": "2026-11-01 08:30",
+   "extras": [],
+   "payment_method": "online",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 3,
+    "parking_cents": 2700,
+    "subtotal_cents": 2700,
+    "total_cents": 2700
+   }
+  },
+  {
+   "legacy_id": 22077,
+   "start": "2026-11-20 19:00",
+   "end": "2026-11-23 20:30",
+   "extras": [],
+   "payment_method": "online",
+   "discount_percent": 10,
+   "expected": {
+    "billable_days": 4,
+    "parking_cents": 3200,
+    "subtotal_cents": 3200,
+    "total_cents": 2880
+   }
+  },
+  {
+   "legacy_id": 22079,
+   "start": "2026-10-30 13:30",
+   "end": "2026-11-02 20:00",
+   "extras": [],
+   "payment_method": "on_site",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 4,
+    "parking_cents": 3200,
+    "subtotal_cents": 3300,
+    "total_cents": 3300,
+    "on_site_fee_cents": 100
+   }
+  },
+  {
+   "legacy_id": 22080,
+   "start": "2026-11-01 09:00",
+   "end": "2026-11-12 16:30",
+   "extras": [],
+   "payment_method": "on_site",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 12,
+    "parking_cents": 7200,
+    "subtotal_cents": 7300,
+    "total_cents": 7300,
+    "on_site_fee_cents": 100
+   }
+  },
+  {
+   "legacy_id": 22081,
+   "start": "2026-10-29 04:00",
+   "end": "2026-10-31 15:30",
+   "extras": [
+    "covered_parking"
+   ],
+   "payment_method": "on_site",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 3,
+    "parking_cents": 2700,
+    "subtotal_cents": 3880,
+    "total_cents": 3880,
+    "covered_parking_cents": 1080,
+    "on_site_fee_cents": 100
+   }
+  },
+  {
+   "legacy_id": 22092,
+   "start": "2026-10-28 11:00",
+   "end": "2026-10-30 11:00",
+   "extras": [],
+   "payment_method": "on_site",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 2,
+    "parking_cents": 2200,
+    "subtotal_cents": 2300,
+    "total_cents": 2300,
+    "on_site_fee_cents": 100
+   }
+  },
+  {
+   "legacy_id": 22095,
+   "start": "2026-11-16 04:00",
+   "end": "2026-11-23 11:00",
+   "extras": [],
+   "payment_method": "online",
+   "discount_percent": 10,
+   "expected": {
+    "billable_days": 8,
+    "parking_cents": 5200,
+    "subtotal_cents": 5200,
+    "total_cents": 4680
+   }
+  },
+  {
+   "legacy_id": 22099,
+   "start": "2026-11-09 13:30",
+   "end": "2026-11-12 16:30",
+   "extras": [],
+   "payment_method": "on_site",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 4,
+    "parking_cents": 3200,
+    "subtotal_cents": 3300,
+    "total_cents": 3300,
+    "on_site_fee_cents": 100
+   }
+  },
+  {
+   "legacy_id": 22100,
+   "start": "2026-10-28 14:00",
+   "end": "2026-10-31 14:00",
+   "extras": [],
+   "payment_method": "on_site",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 3,
+    "parking_cents": 2700,
+    "subtotal_cents": 2800,
+    "total_cents": 2800,
+    "on_site_fee_cents": 100
+   }
+  },
+  {
+   "legacy_id": 22102,
+   "start": "2026-10-29 08:00",
+   "end": "2026-11-06 15:00",
+   "extras": [],
+   "payment_method": "online",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 9,
+    "parking_cents": 5700,
+    "subtotal_cents": 5700,
+    "total_cents": 5700
+   }
+  },
+  {
+   "legacy_id": 22104,
+   "start": "2026-10-31 00:05",
+   "end": "2026-11-02 11:15",
+   "extras": [],
+   "payment_method": "on_site",
+   "discount_percent": 10,
+   "expected": {
+    "billable_days": 3,
+    "parking_cents": 2700,
+    "subtotal_cents": 2800,
+    "total_cents": 2520,
+    "on_site_fee_cents": 100
+   }
+  },
+  {
+   "legacy_id": 22105,
+   "start": "2026-11-06 18:30",
+   "end": "2026-11-08 09:10",
+   "extras": [],
+   "payment_method": "online",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 2,
+    "parking_cents": 2200,
+    "subtotal_cents": 2200,
+    "total_cents": 2200
+   }
+  },
+  {
+   "legacy_id": 22106,
+   "start": "2026-11-05 17:30",
+   "end": "2026-11-09 09:10",
+   "extras": [],
+   "payment_method": "online",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 4,
+    "parking_cents": 3200,
+    "subtotal_cents": 3200,
+    "total_cents": 3200
+   }
+  },
+  {
+   "legacy_id": 22107,
+   "start": "2026-11-03 12:30",
+   "end": "2026-11-07 16:00",
+   "extras": [],
+   "payment_method": "on_site",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 5,
+    "parking_cents": 3700,
+    "subtotal_cents": 3800,
+    "total_cents": 3800,
+    "on_site_fee_cents": 100
+   }
+  },
+  {
+   "legacy_id": 22110,
+   "start": "2026-11-10 12:30",
+   "end": "2026-11-22 19:30",
+   "extras": [],
+   "payment_method": "online",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 13,
+    "parking_cents": 7800,
+    "subtotal_cents": 7800,
+    "total_cents": 7800
+   }
+  },
+  {
+   "legacy_id": 22111,
+   "start": "2026-11-29 05:00",
+   "end": "2026-12-03 19:00",
+   "extras": [],
+   "payment_method": "on_site",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 5,
+    "parking_cents": 3700,
+    "subtotal_cents": 3800,
+    "total_cents": 3800,
+    "on_site_fee_cents": 100
+   }
+  },
+  {
+   "legacy_id": 22112,
+   "start": "2026-10-30 13:30",
+   "end": "2026-11-02 18:00",
+   "extras": [],
+   "payment_method": "online",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 4,
+    "parking_cents": 3200,
+    "subtotal_cents": 3200,
+    "total_cents": 3200
+   }
+  },
+  {
+   "legacy_id": 22116,
+   "start": "2026-11-14 09:00",
+   "end": "2026-11-21 23:59",
+   "extras": [],
+   "payment_method": "on_site",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 8,
+    "parking_cents": 5200,
+    "subtotal_cents": 5300,
+    "total_cents": 5300,
+    "on_site_fee_cents": 100
+   }
+  },
+  {
+   "legacy_id": 22117,
+   "start": "2026-11-07 10:00",
+   "end": "2026-11-17 14:00",
+   "extras": [],
+   "payment_method": "online",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 11,
+    "parking_cents": 6700,
+    "subtotal_cents": 6700,
+    "total_cents": 6700
+   }
+  },
+  {
+   "legacy_id": 22121,
+   "start": "2026-10-29 11:00",
+   "end": "2026-11-07 11:00",
+   "extras": [],
+   "payment_method": "on_site",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 9,
+    "parking_cents": 5700,
+    "subtotal_cents": 5800,
+    "total_cents": 5800,
+    "on_site_fee_cents": 100
+   }
+  },
+  {
+   "legacy_id": 22122,
+   "start": "2026-10-29 14:30",
+   "end": "2026-11-01 18:00",
+   "extras": [],
+   "payment_method": "online",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 4,
+    "parking_cents": 3200,
+    "subtotal_cents": 3200,
+    "total_cents": 3200
+   }
+  },
+  {
+   "legacy_id": 22123,
+   "start": "2026-11-05 11:00",
+   "end": "2026-11-08 14:00",
+   "extras": [],
+   "payment_method": "online",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 4,
+    "parking_cents": 3200,
+    "subtotal_cents": 3200,
+    "total_cents": 3200
+   }
+  },
+  {
+   "legacy_id": 22124,
+   "start": "2026-10-29 12:00",
+   "end": "2026-11-02 13:00",
+   "extras": [],
+   "payment_method": "on_site",
+   "discount_percent": 10,
+   "expected": {
+    "billable_days": 5,
+    "parking_cents": 3700,
+    "subtotal_cents": 3800,
+    "total_cents": 3420,
+    "on_site_fee_cents": 100
+   }
+  },
+  {
+   "legacy_id": 22125,
+   "start": "2026-11-13 08:45",
+   "end": "2026-11-20 08:20",
+   "extras": [],
+   "payment_method": "on_site",
+   "discount_percent": 10,
+   "expected": {
+    "billable_days": 7,
+    "parking_cents": 4700,
+    "subtotal_cents": 4800,
+    "total_cents": 4320,
+    "on_site_fee_cents": 100
+   }
+  },
+  {
+   "legacy_id": 22129,
+   "start": "2026-10-30 17:00",
+   "end": "2026-11-02 19:00",
+   "extras": [],
+   "payment_method": "on_site",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 4,
+    "parking_cents": 3200,
+    "subtotal_cents": 3300,
+    "total_cents": 3300,
+    "on_site_fee_cents": 100
+   }
+  },
+  {
+   "legacy_id": 22130,
+   "start": "2026-10-30 04:30",
+   "end": "2026-11-01 02:00",
+   "extras": [],
+   "payment_method": "online",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 2,
+    "parking_cents": 2200,
+    "subtotal_cents": 2200,
+    "total_cents": 2200
+   }
+  },
+  {
+   "legacy_id": 22135,
+   "start": "2026-11-21 03:30",
+   "end": "2026-11-29 14:30",
+   "extras": [],
+   "payment_method": "on_site",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 9,
+    "parking_cents": 5700,
+    "subtotal_cents": 5800,
+    "total_cents": 5800,
+    "on_site_fee_cents": 100
+   }
+  },
+  {
+   "legacy_id": 22139,
+   "start": "2026-10-30 03:30",
+   "end": "2026-11-09 09:00",
+   "extras": [],
+   "payment_method": "on_site",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 11,
+    "parking_cents": 6700,
+    "subtotal_cents": 6800,
+    "total_cents": 6800,
+    "on_site_fee_cents": 100
+   }
+  },
+  {
+   "legacy_id": 22140,
+   "start": "2026-10-30 04:15",
+   "end": "2026-11-02 18:00",
+   "extras": [],
+   "payment_method": "online",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 4,
+    "parking_cents": 3200,
+    "subtotal_cents": 3200,
+    "total_cents": 3200
+   }
+  },
+  {
+   "legacy_id": 22141,
+   "start": "2026-10-30 17:30",
+   "end": "2026-11-02 23:15",
+   "extras": [],
+   "payment_method": "online",
+   "discount_percent": 10,
+   "expected": {
+    "billable_days": 4,
+    "parking_cents": 3200,
+    "subtotal_cents": 3200,
+    "total_cents": 2880
+   }
+  },
+  {
+   "legacy_id": 22143,
+   "start": "2026-11-10 05:00",
+   "end": "2026-11-14 01:00",
+   "extras": [],
+   "payment_method": "online",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 4,
+    "parking_cents": 3200,
+    "subtotal_cents": 3200,
+    "total_cents": 3200
+   }
+  },
+  {
+   "legacy_id": 22144,
+   "start": "2026-11-16 04:00",
+   "end": "2026-11-17 23:40",
+   "extras": [],
+   "payment_method": "on_site",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 2,
+    "parking_cents": 2200,
+    "subtotal_cents": 2300,
+    "total_cents": 2300,
+    "on_site_fee_cents": 100
+   }
+  },
+  {
+   "legacy_id": 22145,
+   "start": "2026-11-20 11:15",
+   "end": "2026-11-23 14:15",
+   "extras": [],
+   "payment_method": "online",
+   "discount_percent": 10,
+   "expected": {
+    "billable_days": 4,
+    "parking_cents": 3200,
+    "subtotal_cents": 3200,
+    "total_cents": 2880
+   }
+  },
+  {
+   "legacy_id": 22146,
+   "start": "2026-11-03 05:00",
+   "end": "2026-11-05 18:45",
+   "extras": [],
+   "payment_method": "online",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 3,
+    "parking_cents": 2700,
+    "subtotal_cents": 2700,
+    "total_cents": 2700
+   }
+  },
+  {
+   "legacy_id": 22149,
+   "start": "2026-11-03 05:00",
+   "end": "2026-11-05 18:45",
+   "extras": [],
+   "payment_method": "online",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 3,
+    "parking_cents": 2700,
+    "subtotal_cents": 2700,
+    "total_cents": 2700
+   }
+  },
+  {
+   "legacy_id": 22150,
+   "start": "2026-11-05 11:00",
+   "end": "2026-11-13 16:00",
+   "extras": [],
+   "payment_method": "online",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 9,
+    "parking_cents": 5700,
+    "subtotal_cents": 5700,
+    "total_cents": 5700
+   }
+  },
+  {
+   "legacy_id": 22151,
+   "start": "2026-11-05 11:00",
+   "end": "2026-11-13 15:00",
+   "extras": [],
+   "payment_method": "online",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 9,
+    "parking_cents": 5700,
+    "subtotal_cents": 5700,
+    "total_cents": 5700
+   }
+  },
+  {
+   "legacy_id": 22156,
+   "start": "2026-11-08 04:00",
+   "end": "2026-11-13 21:30",
+   "extras": [
+    "key_drop"
+   ],
+   "payment_method": "online",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 6,
+    "parking_cents": 4200,
+    "subtotal_cents": 4900,
+    "total_cents": 4900,
+    "key_drop_cents": 700
+   }
+  },
+  {
+   "legacy_id": 22157,
+   "start": "2026-11-22 07:00",
+   "end": "2026-11-25 23:55",
+   "extras": [],
+   "payment_method": "on_site",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 4,
+    "parking_cents": 3200,
+    "subtotal_cents": 3300,
+    "total_cents": 3300,
+    "on_site_fee_cents": 100
+   }
+  },
+  {
+   "legacy_id": 22160,
+   "start": "2026-11-13 09:45",
+   "end": "2026-11-20 16:00",
+   "extras": [],
+   "payment_method": "on_site",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 8,
+    "parking_cents": 5200,
+    "subtotal_cents": 5300,
+    "total_cents": 5300,
+    "on_site_fee_cents": 100
+   }
+  },
+  {
+   "legacy_id": 22163,
+   "start": "2026-11-02 06:45",
+   "end": "2026-11-05 08:00",
+   "extras": [],
+   "payment_method": "on_site",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 4,
+    "parking_cents": 3200,
+    "subtotal_cents": 3300,
+    "total_cents": 3300,
+    "on_site_fee_cents": 100
+   }
+  },
+  {
+   "legacy_id": 22164,
+   "start": "2026-11-02 06:45",
+   "end": "2026-11-05 08:00",
+   "extras": [],
+   "payment_method": "on_site",
+   "discount_percent": null,
+   "expected": {
+    "billable_days": 4,
+    "parking_cents": 3200,
+    "subtotal_cents": 3300,
+    "total_cents": 3300,
+    "on_site_fee_cents": 100
+   }
+  },
+  {
+   "legacy_id": 22166,
+   "start": "2026-11-02 14:45",
+   "end": "2026-11-13 16:30",
+   "extras": [],
+   "payment_method": "on_site",
+   "discount_percent": 10,
+   "expected": {
+    "billable_days": 12,
+    "parking_cents": 7200,
+    "subtotal_cents": 7300,
+    "total_cents": 6570,
+    "on_site_fee_cents": 100
+   }
+  },
+  {
+   "legacy_id": 22168,
+   "start": "2026-10-31 19:00",
+   "end": "2026-11-02 23:59",
+   "extras": [],
+   "payment_method": "on_site",
+   "discount_percent": 10,
+   "expected": {
+    "billable_days": 3,
+    "parking_cents": 2700,
+    "subtotal_cents": 2800,
+    "total_cents": 2520,
+    "on_site_fee_cents": 100
+   }
+  }
+ ]
+}
