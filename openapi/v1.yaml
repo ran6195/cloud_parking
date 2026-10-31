@@ -1,0 +1,1384 @@
+openapi: 3.1.0
+
+info:
+  title: Motore prenotazioni parcheggio
+  version: 1.0.0-draft
+  summary: Preventivi, disponibilità, prenotazioni, pagamenti e cancellazioni.
+  description: |
+    API del motore prenotazioni (`App\Engine`). È l'unico punto di accesso per
+    tutte le interfacce: il form del CMS, la PWA, eventuali partner.
+
+    ## Convenzioni
+
+    - **Date e ore**: ISO 8601 **con offset** (`2026-11-03T08:00:00+01:00`).
+      Il motore lavora in `Europe/Rome`; un orario senza offset viene rifiutato.
+    - **Importi**: sempre in **centesimi interi** (`Money`), mai decimali.
+      La valuta è `EUR`.
+    - **Il prezzo lo decide il server**: si chiede un preventivo (`POST /quotes`),
+      si riceve un `quote_id` con scadenza e si prenota solo a partire da quello.
+    - **Errori**: [RFC 9457](https://www.rfc-editor.org/rfc/rfc9457)
+      `application/problem+json`, con un `code` stabile da usare nel codice client.
+      `title` e `detail` sono in italiano e servono solo per la lettura umana.
+    - **Idempotenza**: le richieste che creano qualcosa accettano l'header
+      `Idempotency-Key`. Ripetere una richiesta con la stessa chiave e lo
+      stesso corpo restituisce la risposta originale (header
+      `Idempotent-Replayed: true`); stessa chiave con corpo diverso → `409 idempotency_conflict`.
+    - **Rate limit**: ogni risposta include `RateLimit-Limit`,
+      `RateLimit-Remaining` e `RateLimit-Reset`; oltre il limite → `429`.
+
+    ## Autenticazione
+
+    Ogni interfaccia è un *client* con due chiavi, passate come
+    `Authorization: Bearer <chiave>`:
+
+    | Chiave | Dove | Cosa può fare |
+    |---|---|---|
+    | `pk_…` pubblicabile | browser, PWA (è visibile) | catalogo, disponibilità, preventivi, creazione prenotazioni, pagamento, cancellazione. Accettata solo dalle origini registrate (CORS). |
+    | `sk_…` segreta | server-to-server | tutto quanto sopra, più la lettura delle prenotazioni del proprio canale. |
+
+    Ogni prenotazione registra il `channel` del client che l'ha creata.
+  contact:
+    name: Sviluppo
+  license:
+    name: Proprietario
+    identifier: LicenseRef-Proprietary
+
+servers:
+  - url: https://{host}/api/v1
+    description: Laravel Cloud
+    variables:
+      host:
+        default: example.laravel.cloud
+  - url: http://localhost:8000/api/v1
+    description: Sviluppo locale
+
+security:
+  - clientKey: []
+
+tags:
+  - name: Sistema
+    description: Stato del servizio.
+  - name: Catalogo
+    description: Servizi e tariffe.
+  - name: Preventivi
+    description: Disponibilità, codici sconto e preventivi.
+  - name: Prenotazioni
+    description: Creazione e lettura delle prenotazioni.
+  - name: Pagamenti
+    description: Pagamento online con PayPal, gestito lato server.
+  - name: Cancellazioni
+    description: Cancellazione da parte del cliente tramite il token ricevuto per email.
+  - name: Integrazioni
+    description: Endpoint chiamati da servizi esterni, non dalle interfacce.
+
+paths:
+  /health:
+    get:
+      tags: [Sistema]
+      operationId: getHealth
+      summary: Stato del motore
+      security: []
+      responses:
+        '200':
+          description: Motore e database raggiungibili.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Health' }
+              example: { status: ok, api_version: v1, database: ok }
+        '503':
+          description: Database del motore non raggiungibile.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Health' }
+              example: { status: degraded, api_version: v1, database: unavailable }
+
+  /extras:
+    get:
+      tags: [Catalogo]
+      operationId: listExtras
+      summary: Servizi aggiuntivi attivi
+      description: |
+        Elenco dei servizi prenotabili in questo momento, con prezzo e regole.
+        I servizi disattivati dal gestore non compaiono.
+      responses:
+        '200':
+          description: Servizi attivi.
+          headers:
+            RateLimit-Limit: { $ref: '#/components/headers/RateLimit-Limit' }
+            RateLimit-Remaining: { $ref: '#/components/headers/RateLimit-Remaining' }
+            RateLimit-Reset: { $ref: '#/components/headers/RateLimit-Reset' }
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/Extra' }
+              example:
+                data:
+                  - id: covered_parking
+                    name: Posto coperto
+                    description: Auto al riparo per tutta la sosta.
+                    pricing: percentage_of_parking
+                    price: null
+                    percentage: 40
+                    capacity_limited: true
+                    incompatible_with: [key_drop]
+                    message: null
+                  - id: exterior_wash
+                    name: Lavaggio esterno
+                    description: Lavaggio esterno completo al rientro.
+                    pricing: fixed
+                    price: { amount_cents: 1500, currency: EUR }
+                    percentage: null
+                    capacity_limited: false
+                    incompatible_with: []
+                    message: null
+                  - id: key_drop
+                    name: Tieni le chiavi
+                    description: Lasci le chiavi, spostiamo noi l'auto.
+                    pricing: fixed
+                    price: { amount_cents: 500, currency: EUR }
+                    percentage: null
+                    capacity_limited: true
+                    incompatible_with: [covered_parking]
+                    message: null
+                  - id: ev_charging
+                    name: Ricarica auto elettrica
+                    description: Su richiesta.
+                    pricing: informational
+                    price: null
+                    percentage: null
+                    capacity_limited: false
+                    incompatible_with: []
+                    message: Il costo della ricarica viene calcolato al rientro in base ai kWh.
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+
+  /tariffs/summary:
+    get:
+      tags: [Catalogo]
+      operationId: getTariffSummary
+      summary: Prezzi "a partire da"
+      description: |
+        Prezzi indicativi del parcheggio scoperto per alcune durate tipiche,
+        dal listino valido alla data indicata. Pensato per landing e materiale
+        promozionale: **non** sostituisce il preventivo.
+      parameters:
+        - name: date
+          in: query
+          required: false
+          description: Data di inizio sosta per scegliere il listino. Default oggi.
+          schema: { type: string, format: date, example: '2026-12-20' }
+      responses:
+        '200':
+          description: Riepilogo del listino.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TariffSummary' }
+              example:
+                price_list: { valid_from: '2026-10-01', valid_to: '2027-03-31' }
+                prices:
+                  - { days: 1, price: { amount_cents: 1500, currency: EUR } }
+                  - { days: 3, price: { amount_cents: 3000, currency: EUR } }
+                  - { days: 7, price: { amount_cents: 4500, currency: EUR } }
+                  - { days: 14, price: { amount_cents: 7500, currency: EUR } }
+                price_per_day_after_30: { amount_cents: 500, currency: EUR }
+                covered_parking_percentage: 40
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404':
+          description: Nessun listino per la data indicata.
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/Problem' }
+              example:
+                type: https://docs.parcheggio.example/errors/price_list_not_found
+                title: Listino non disponibile
+                status: 404
+                code: price_list_not_found
+                detail: Non esiste un listino per il 20/12/2031.
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+
+  /availability:
+    post:
+      tags: [Preventivi]
+      operationId: checkAvailability
+      summary: Disponibilità per un periodo
+      description: |
+        Verifica se il periodo è prenotabile, per il parcheggio e per i servizi
+        a capacità limitata richiesti. Non riserva nulla: la disponibilità viene
+        ricontrollata alla creazione della prenotazione.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AvailabilityRequest' }
+            example:
+              start: '2026-12-20T08:00:00+01:00'
+              end: '2026-12-27T20:00:00+01:00'
+              extras: [covered_parking]
+      responses:
+        '200':
+          description: Esito della verifica (anche quando non disponibile).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Availability' }
+              examples:
+                disponibile:
+                  value:
+                    available: true
+                    parking: { available: true, reason: null, unavailable_dates: [] }
+                    extras:
+                      covered_parking: { available: true, reason: null, unavailable_dates: [] }
+                posto_coperto_esaurito:
+                  value:
+                    available: false
+                    parking: { available: true, reason: null, unavailable_dates: [] }
+                    extras:
+                      covered_parking:
+                        available: false
+                        reason: capacity_full
+                        unavailable_dates: ['2026-12-24', '2026-12-25']
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '422': { $ref: '#/components/responses/ValidationFailed' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+
+  /discounts/check:
+    post:
+      tags: [Preventivi]
+      operationId: checkDiscount
+      summary: Verifica un codice sconto
+      description: |
+        Utile per dare un riscontro immediato nel form. Il codice viene comunque
+        applicato (e riverificato) da `POST /quotes`. Rate limit stretto.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [code]
+              properties:
+                code: { type: string, minLength: 1, maxLength: 50, example: estate10 }
+      responses:
+        '200':
+          description: Esito della verifica (anche quando il codice non è valido).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DiscountCheck' }
+              examples:
+                valido:
+                  value: { code: ESTATE10, valid: true, reason: null, type: percentage, percentage: 10, amount: null, valid_until: '2026-12-31' }
+                scaduto:
+                  value: { code: NATALE, valid: false, reason: expired, type: null, percentage: null, amount: null, valid_until: null }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '422': { $ref: '#/components/responses/ValidationFailed' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+
+  /quotes:
+    post:
+      tags: [Preventivi]
+      operationId: createQuote
+      summary: Calcola un preventivo
+      description: |
+        Calcola righe e totali per periodo, servizi, metodo di pagamento e codice
+        sconto. Il preventivo resta valido fino a `expires_at` ed è l'unico modo
+        per creare una prenotazione.
+
+        Un codice sconto non valido **non** fa fallire la richiesta: il
+        preventivo viene calcolato senza sconto e `discount.applied` è `false`
+        con il motivo. Allo stesso modo, un periodo non disponibile restituisce
+        comunque il prezzo, con `bookable: false`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/QuoteRequest' }
+            example:
+              start: '2026-12-20T08:00:00+01:00'
+              end: '2026-12-23T07:00:00+01:00'
+              extras: [covered_parking, exterior_wash]
+              payment_method: on_site
+              discount_code: estate10
+      responses:
+        '201':
+          description: Preventivo creato.
+          headers:
+            Location:
+              description: URL del preventivo.
+              schema: { type: string, example: /api/v1/quotes/0193c4d2-7b1e-7cc4-9a51-3f0d2a8e6b10 }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Quote' }
+              examples:
+                preventivo: { $ref: '#/components/examples/QuoteExample' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '422':
+          description: |
+            Dati non validi (`validation_failed`), servizi incompatibili
+            (`extras_incompatible`), servizio non attivo (`extra_unavailable`)
+            o nessun listino applicabile (`price_list_not_found`).
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/Problem' }
+              examples:
+                incompatibili:
+                  value:
+                    type: https://docs.parcheggio.example/errors/extras_incompatible
+                    title: Servizi non combinabili
+                    status: 422
+                    code: extras_incompatible
+                    detail: Posto coperto e Tieni le chiavi non possono essere scelti insieme.
+                    errors: { extras: ['Posto coperto e Tieni le chiavi non possono essere scelti insieme.'] }
+                date_non_valide:
+                  value:
+                    type: https://docs.parcheggio.example/errors/validation_failed
+                    title: Dati non validi
+                    status: 422
+                    code: validation_failed
+                    detail: La richiesta contiene dati non validi.
+                    errors: { end: ['Il rientro deve essere successivo alla partenza.'] }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+
+  /quotes/{quoteId}:
+    parameters:
+      - $ref: '#/components/parameters/QuoteId'
+    get:
+      tags: [Preventivi]
+      operationId: getQuote
+      summary: Rilegge un preventivo
+      description: Restituisce il preventivo così com'è stato calcolato, con il suo `status` attuale.
+      responses:
+        '200':
+          description: Preventivo.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Quote' }
+              examples:
+                preventivo: { $ref: '#/components/examples/QuoteExample' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+
+  /reservations:
+    post:
+      tags: [Prenotazioni]
+      operationId: createReservation
+      summary: Crea una prenotazione da un preventivo
+      description: |
+        Converte un preventivo attivo in prenotazione. Il server:
+
+        1. verifica che il preventivo sia `active` e non scaduto;
+        2. ricalcola prezzo e disponibilità **dentro un lock** (niente overbooking);
+        3. crea cliente e prenotazione.
+
+        Con `payment_method: on_site` la prenotazione nasce `confirmed` e le
+        email partono subito. Con `online` nasce `pending_payment` e diventa
+        `paid` dopo il pagamento; se non viene pagata entro `payment.due_by`
+        passa a `expired` e libera il posto.
+
+        Un errore nell'invio delle email non fa fallire la richiesta:
+        `notifications.email_sent` sarà `false`.
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ReservationRequest' }
+            example:
+              quote_id: 0193c4d2-7b1e-7cc4-9a51-3f0d2a8e6b10
+              customer:
+                first_name: Maria
+                last_name: Rossi
+                email: maria.rossi@example.com
+                phone: '+39 333 123 4567'
+              vehicle: { plate: AB123CD, make: Fiat, model: Panda }
+              travel: { outbound_flight: FR1234, return_flight: FR1235, passengers: 2 }
+              billing: null
+              notes: Arrivo con un bagaglio ingombrante.
+              referral: partner-hotel
+              consents: { privacy: true, marketing: false }
+      responses:
+        '201':
+          description: Prenotazione creata.
+          headers:
+            Location:
+              description: URL della prenotazione (leggibile con chiave `sk_`).
+              schema: { type: string }
+            Idempotent-Replayed: { $ref: '#/components/headers/Idempotent-Replayed' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Reservation' }
+              examples:
+                prenotazione: { $ref: '#/components/examples/ReservationExample' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409':
+          description: |
+            Il preventivo non è più utilizzabile:
+
+            - `quote_expired`: scaduto;
+            - `quote_used`: già convertito in una prenotazione;
+            - `quote_mismatch`: prezzo o sconto cambiati nel frattempo; `quote` contiene un nuovo preventivo da mostrare al cliente;
+            - `dates_unavailable`: il periodo o un servizio non è più disponibile;
+            - `idempotency_conflict`: stessa `Idempotency-Key` con un corpo diverso.
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/Problem' }
+              examples:
+                date_non_disponibili:
+                  value:
+                    type: https://docs.parcheggio.example/errors/dates_unavailable
+                    title: Date non più disponibili
+                    status: 409
+                    code: dates_unavailable
+                    detail: Le date selezionate non sono più disponibili. Contattaci al 051 41 133 31 per verificare la disponibilità residua.
+                    unavailable_dates: ['2026-12-24']
+                prezzo_cambiato:
+                  value:
+                    type: https://docs.parcheggio.example/errors/quote_mismatch
+                    title: Il preventivo è cambiato
+                    status: 409
+                    code: quote_mismatch
+                    detail: Il codice sconto non è più valido. Il nuovo preventivo è nel campo quote.
+        '422': { $ref: '#/components/responses/ValidationFailed' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+
+  /reservations/{reservationId}:
+    parameters:
+      - $ref: '#/components/parameters/ReservationId'
+    get:
+      tags: [Prenotazioni]
+      operationId: getReservation
+      summary: Dettaglio di una prenotazione
+      description: Solo con chiave `sk_`, e solo per prenotazioni del proprio canale.
+      security:
+        - secretKey: []
+      responses:
+        '200':
+          description: Prenotazione.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Reservation' }
+              examples:
+                prenotazione: { $ref: '#/components/examples/ReservationExample' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+
+  /reservations/{reservationId}/payments/paypal/orders:
+    parameters:
+      - $ref: '#/components/parameters/ReservationId'
+    post:
+      tags: [Pagamenti]
+      operationId: createPaypalOrder
+      summary: Crea l'ordine PayPal
+      description: |
+        Il server crea l'ordine PayPal con l'importo della prenotazione
+        (il client non decide mai l'importo). Il client usa `order_id` con il
+        pulsante PayPal (`createOrder`) e, dopo l'approvazione del cliente,
+        chiama l'endpoint di cattura. Ripetere la chiamata per la stessa
+        prenotazione restituisce lo stesso ordine finché è valido.
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      responses:
+        '201':
+          description: Ordine creato.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PaypalOrder' }
+              example:
+                order_id: 5O190127TN364715T
+                amount: { amount_cents: 5220, currency: EUR }
+                status: CREATED
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409':
+          description: Prenotazione non pagabile (`reservation_not_payable`), ad esempio già pagata, scaduta o da pagare in parcheggio.
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/Problem' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '502': { $ref: '#/components/responses/PaymentProviderError' }
+
+  /reservations/{reservationId}/payments/paypal/capture:
+    parameters:
+      - $ref: '#/components/parameters/ReservationId'
+    post:
+      tags: [Pagamenti]
+      operationId: capturePaypalOrder
+      summary: Cattura il pagamento PayPal
+      description: |
+        Cattura lato server l'ordine approvato dal cliente, verifica importo,
+        valuta e stato `COMPLETED`, poi segna la prenotazione come `paid` e
+        invia le email. Idempotente: catturare di nuovo un ordine già catturato
+        restituisce l'esito originale.
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [order_id]
+              properties:
+                order_id: { type: string, example: 5O190127TN364715T }
+      responses:
+        '200':
+          description: Pagamento confermato.
+          headers:
+            Idempotent-Replayed: { $ref: '#/components/headers/Idempotent-Replayed' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Reservation' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409':
+          description: Ordine non associato alla prenotazione o prenotazione non pagabile (`reservation_not_payable`).
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/Problem' }
+        '422':
+          description: Pagamento non verificato (`payment_not_verified`), ad esempio importo diverso o ordine non approvato.
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/Problem' }
+              example:
+                type: https://docs.parcheggio.example/errors/payment_not_verified
+                title: Pagamento non verificato
+                status: 422
+                code: payment_not_verified
+                detail: L'importo dell'ordine PayPal non corrisponde a quello della prenotazione.
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '502': { $ref: '#/components/responses/PaymentProviderError' }
+
+  /cancellations/{token}:
+    parameters:
+      - $ref: '#/components/parameters/CancellationToken'
+    get:
+      tags: [Cancellazioni]
+      operationId: previewCancellation
+      summary: Anteprima della cancellazione
+      description: |
+        Il token arriva al cliente nell'email di conferma. Questo endpoint dice
+        se la prenotazione è ancora annullabile e fino a quando.
+      responses:
+        '200':
+          description: Anteprima.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CancellationPreview' }
+              examples:
+                annullabile:
+                  value:
+                    reservation: { number: 2026001234, status: confirmed, start: '2026-12-20T08:00:00+01:00', end: '2026-12-23T07:00:00+01:00', plate: AB123CD }
+                    cancellable: true
+                    reason: null
+                    deadline: '2026-12-19T08:00:00+01:00'
+                    refund_required: false
+                fuori_tempo:
+                  value:
+                    reservation: { number: 2026001234, status: paid, start: '2026-12-20T08:00:00+01:00', end: '2026-12-23T07:00:00+01:00', plate: AB123CD }
+                    cancellable: false
+                    reason: cancellation_window_closed
+                    deadline: '2026-12-19T08:00:00+01:00'
+                    refund_required: true
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+    post:
+      tags: [Cancellazioni]
+      operationId: confirmCancellation
+      summary: Annulla la prenotazione
+      description: |
+        Annulla la prenotazione se si è ancora entro la finestra di
+        cancellazione gratuita. Se la prenotazione era pagata servono i dati
+        per il rimborso. Cliente e gestore ricevono un'email.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CancellationRequest' }
+            example:
+              reason: Volo cancellato
+              refund: { tax_code: RSSMRA80A41A944I, notes: null }
+      responses:
+        '200':
+          description: Prenotazione annullata.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CancellationResult' }
+              example:
+                number: 2026001234
+                status: cancelled
+                cancelled_at: '2026-12-10T18:22:05+01:00'
+                notifications: { email_sent: true }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409':
+          description: Già annullata (`already_cancelled`) o fuori dalla finestra di cancellazione (`cancellation_window_closed`).
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/Problem' }
+              example:
+                type: https://docs.parcheggio.example/errors/cancellation_window_closed
+                title: Cancellazione non più possibile
+                status: 409
+                code: cancellation_window_closed
+                detail: La cancellazione gratuita era possibile fino al 19/12/2026 alle 08:00.
+        '422': { $ref: '#/components/responses/ValidationFailed' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+
+  /webhooks/paypal:
+    post:
+      tags: [Integrazioni]
+      operationId: receivePaypalWebhook
+      summary: Notifiche PayPal
+      description: |
+        Rete di sicurezza per i pagamenti: se il client si chiude dopo
+        l'approvazione ma prima della cattura, l'evento
+        `PAYMENT.CAPTURE.COMPLETED` conferma comunque la prenotazione.
+        Autenticato con la verifica della firma PayPal, non con le chiavi client.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, additionalProperties: true }
+      responses:
+        '204': { description: Evento ricevuto. }
+        '400': { description: Firma non valida. }
+
+webhooks:
+  reservation.created:
+    post:
+      tags: [Integrazioni]
+      operationId: onReservationCreated
+      summary: Prenotazione creata
+      description: Inviato ai client che registrano un endpoint. Vedi `WebhookEvent`.
+      parameters:
+        - $ref: '#/components/parameters/WebhookSignature'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/WebhookEvent' }
+      responses:
+        '2XX': { description: Ricevuto. Altri codici causano nuovi tentativi con backoff. }
+  reservation.paid:
+    post:
+      tags: [Integrazioni]
+      operationId: onReservationPaid
+      summary: Prenotazione pagata
+      parameters:
+        - $ref: '#/components/parameters/WebhookSignature'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/WebhookEvent' }
+      responses:
+        '2XX': { description: Ricevuto. }
+  reservation.cancelled:
+    post:
+      tags: [Integrazioni]
+      operationId: onReservationCancelled
+      summary: Prenotazione annullata
+      parameters:
+        - $ref: '#/components/parameters/WebhookSignature'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/WebhookEvent' }
+      responses:
+        '2XX': { description: Ricevuto. }
+
+components:
+  securitySchemes:
+    clientKey:
+      type: http
+      scheme: bearer
+      description: Chiave pubblicabile `pk_…` o segreta `sk_…` del client.
+    secretKey:
+      type: http
+      scheme: bearer
+      description: Solo chiave segreta `sk_…`.
+
+  parameters:
+    QuoteId:
+      name: quoteId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    ReservationId:
+      name: reservationId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    CancellationToken:
+      name: token
+      in: path
+      required: true
+      description: Token di 64 caratteri esadecimali inviato al cliente.
+      schema: { type: string, pattern: '^[a-f0-9]{64}$' }
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: false
+      description: Valore univoco per tentativo logico (consigliato un UUID). Conservato 24 ore.
+      schema: { type: string, minLength: 8, maxLength: 255 }
+    WebhookSignature:
+      name: Engine-Signature
+      in: header
+      required: true
+      description: |
+        `t=<unix timestamp>,v1=<hex HMAC-SHA256>` calcolato su `"<t>.<corpo>"`
+        con il segreto dell'endpoint. Rifiutare firme più vecchie di 5 minuti.
+      schema: { type: string, example: 't=1797436800,v1=5257a869e7ecebeda32affa62cdca3fa51cad7e77a0e56ff536d0ce8e108d8bd' }
+
+  headers:
+    RateLimit-Limit:
+      description: Richieste consentite nella finestra corrente.
+      schema: { type: integer }
+    RateLimit-Remaining:
+      description: Richieste rimaste nella finestra corrente.
+      schema: { type: integer }
+    RateLimit-Reset:
+      description: Secondi alla fine della finestra.
+      schema: { type: integer }
+    Idempotent-Replayed:
+      description: Presente e `true` quando la risposta è la ripetizione di una richiesta già eseguita.
+      schema: { type: boolean }
+
+  responses:
+    Unauthorized:
+      description: Chiave mancante, non valida o revocata (`unauthenticated`), oppure origine non consentita per una chiave `pk_`.
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+          example:
+            type: https://docs.parcheggio.example/errors/unauthenticated
+            title: Non autenticato
+            status: 401
+            code: unauthenticated
+            detail: Chiave API mancante o non valida.
+    Forbidden:
+      description: La chiave non ha i permessi per questa operazione (`forbidden`).
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    NotFound:
+      description: Risorsa inesistente o non visibile al client (`not_found`).
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+          example:
+            type: https://docs.parcheggio.example/errors/not_found
+            title: Non trovato
+            status: 404
+            code: not_found
+            detail: La risorsa richiesta non esiste.
+    ValidationFailed:
+      description: Dati non validi (`validation_failed`); `errors` elenca i messaggi per campo.
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+          example:
+            type: https://docs.parcheggio.example/errors/validation_failed
+            title: Dati non validi
+            status: 422
+            code: validation_failed
+            detail: La richiesta contiene dati non validi.
+            errors:
+              customer.email: ["L'indirizzo email non è valido."]
+              consents.privacy: ['Il consenso privacy è obbligatorio.']
+    TooManyRequests:
+      description: Troppe richieste (`rate_limited`).
+      headers:
+        Retry-After:
+          description: Secondi da attendere.
+          schema: { type: integer }
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    PaymentProviderError:
+      description: PayPal non risponde o risponde con un errore (`payment_provider_error`). La richiesta si può ritentare con la stessa `Idempotency-Key`.
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+
+  examples:
+    QuoteExample:
+      summary: 3 giorni, posto coperto, lavaggio, pagamento in parcheggio, sconto 10%
+      value:
+        id: 0193c4d2-7b1e-7cc4-9a51-3f0d2a8e6b10
+        status: active
+        expires_at: '2026-12-01T10:30:00+01:00'
+        stay:
+          start: '2026-12-20T08:00:00+01:00'
+          end: '2026-12-23T07:00:00+01:00'
+          duration_minutes: 4260
+          billable_days: 3
+          days_after_30: 0
+        extras: [covered_parking, exterior_wash]
+        payment_method: on_site
+        lines:
+          - { type: parking, code: parking, description: Parcheggio scoperto, quantity: 3, unit_price: null, total: { amount_cents: 3000, currency: EUR } }
+          - { type: extra, code: covered_parking, description: Posto coperto (+40%), quantity: 3, unit_price: null, total: { amount_cents: 1200, currency: EUR } }
+          - { type: extra, code: exterior_wash, description: Lavaggio esterno, quantity: 1, unit_price: { amount_cents: 1500, currency: EUR }, total: { amount_cents: 1500, currency: EUR } }
+          - { type: payment_fee, code: on_site, description: Pagamento in parcheggio, quantity: 1, unit_price: { amount_cents: 100, currency: EUR }, total: { amount_cents: 100, currency: EUR } }
+        subtotal: { amount_cents: 5800, currency: EUR }
+        discount:
+          code: ESTATE10
+          applied: true
+          reason: null
+          type: percentage
+          percentage: 10
+          amount: { amount_cents: 580, currency: EUR }
+        total: { amount_cents: 5220, currency: EUR }
+        bookable: true
+        availability:
+          available: true
+          parking: { available: true, reason: null, unavailable_dates: [] }
+          extras:
+            covered_parking: { available: true, reason: null, unavailable_dates: [] }
+        cancellation: { free_until: '2026-12-19T08:00:00+01:00' }
+    ReservationExample:
+      value:
+        id: 0193c4d5-1a2b-7d3e-8f40-5a6b7c8d9e0f
+        number: 2026001234
+        status: confirmed
+        channel: cms
+        created_at: '2026-12-01T10:12:44+01:00'
+        stay:
+          start: '2026-12-20T08:00:00+01:00'
+          end: '2026-12-23T07:00:00+01:00'
+          duration_minutes: 4260
+          billable_days: 3
+          days_after_30: 0
+        lines:
+          - { type: parking, code: parking, description: Parcheggio, quantity: 3, unit_price: null, total: { amount_cents: 3000, currency: EUR } }
+          - { type: extra, code: covered_parking, description: Posto coperto (+40%), quantity: 3, unit_price: null, total: { amount_cents: 1200, currency: EUR } }
+          - { type: extra, code: exterior_wash, description: Lavaggio esterno, quantity: 1, unit_price: { amount_cents: 1500, currency: EUR }, total: { amount_cents: 1500, currency: EUR } }
+          - { type: payment_fee, code: on_site, description: Pagamento in parcheggio, quantity: 1, unit_price: { amount_cents: 100, currency: EUR }, total: { amount_cents: 100, currency: EUR } }
+        subtotal: { amount_cents: 5800, currency: EUR }
+        discount: { code: ESTATE10, applied: true, reason: null, type: percentage, percentage: 10, amount: { amount_cents: 580, currency: EUR } }
+        total: { amount_cents: 5220, currency: EUR }
+        customer: { first_name: Maria, last_name: Rossi, email: maria.rossi@example.com, phone: '+39 333 123 4567' }
+        vehicle: { plate: AB123CD, make: Fiat, model: Panda }
+        travel: { outbound_flight: FR1234, return_flight: FR1235, passengers: 2 }
+        payment:
+          method: on_site
+          status: due_on_site
+          amount: { amount_cents: 5220, currency: EUR }
+          due_by: null
+          paid_at: null
+        cancellation: { free_until: '2026-12-19T08:00:00+01:00', cancelled_at: null }
+        notifications: { email_sent: true }
+
+  schemas:
+    Health:
+      type: object
+      required: [status, api_version, database]
+      properties:
+        status: { type: string, enum: [ok, degraded] }
+        api_version: { type: string, const: v1 }
+        database: { type: string, enum: [ok, unavailable] }
+
+    Money:
+      type: object
+      description: Importo in centesimi interi.
+      required: [amount_cents, currency]
+      properties:
+        amount_cents: { type: integer, example: 4500 }
+        currency: { type: string, const: EUR }
+
+    DateTimeWithOffset:
+      type: string
+      format: date-time
+      description: ISO 8601 con offset obbligatorio.
+      pattern: '^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2})?(Z|[+-]\d{2}:\d{2})$'
+      example: '2026-12-20T08:00:00+01:00'
+
+    ExtraId:
+      type: string
+      description: |
+        - `covered_parking`: posto coperto (supplemento in % sul parcheggio, capacità limitata)
+        - `exterior_wash`: lavaggio esterno
+        - `interior_wash`: lavaggio interni
+        - `key_drop`: tieni le chiavi (capacità limitata, incompatibile con `covered_parking`)
+        - `ev_charging`: ricarica auto elettrica (informativo, costo 0)
+        - `tyre_repair`: riparazione gomme (informativo, costo 0)
+      enum: [covered_parking, exterior_wash, interior_wash, key_drop, ev_charging, tyre_repair]
+
+    PaymentMethod:
+      type: string
+      description: |
+        - `online`: PayPal al momento della prenotazione
+        - `on_site`: in parcheggio, con una commissione fissa
+      enum: [online, on_site]
+
+    Extra:
+      type: object
+      required: [id, name, description, pricing, price, percentage, capacity_limited, incompatible_with, message]
+      properties:
+        id: { $ref: '#/components/schemas/ExtraId' }
+        name: { type: string }
+        description: { type: [string, 'null'] }
+        pricing:
+          type: string
+          description: |
+            - `fixed`: prezzo fisso, quantità 1
+            - `percentage_of_parking`: percentuale sul costo del parcheggio
+            - `informational`: nessun costo, solo `message`
+          enum: [fixed, percentage_of_parking, informational]
+        price:
+          oneOf:
+            - $ref: '#/components/schemas/Money'
+            - type: 'null'
+        percentage: { type: [integer, 'null'], minimum: 0, maximum: 100 }
+        capacity_limited: { type: boolean }
+        incompatible_with:
+          type: array
+          items: { $ref: '#/components/schemas/ExtraId' }
+        message: { type: [string, 'null'] }
+
+    TariffSummary:
+      type: object
+      required: [price_list, prices, price_per_day_after_30, covered_parking_percentage]
+      properties:
+        price_list:
+          type: object
+          required: [valid_from, valid_to]
+          properties:
+            valid_from: { type: string, format: date }
+            valid_to: { type: string, format: date }
+        prices:
+          type: array
+          items:
+            type: object
+            required: [days, price]
+            properties:
+              days: { type: integer, minimum: 1, maximum: 30 }
+              price: { $ref: '#/components/schemas/Money' }
+        price_per_day_after_30: { $ref: '#/components/schemas/Money' }
+        covered_parking_percentage: { type: integer }
+
+    StayRequest:
+      type: object
+      required: [start, end]
+      properties:
+        start:
+          $ref: '#/components/schemas/DateTimeWithOffset'
+          description: Consegna dell'auto. Non nel passato.
+        end:
+          $ref: '#/components/schemas/DateTimeWithOffset'
+          description: Ritiro dell'auto. Successivo a `start`, al massimo 365 giorni dopo.
+
+    AvailabilityRequest:
+      allOf:
+        - $ref: '#/components/schemas/StayRequest'
+        - type: object
+          properties:
+            extras:
+              type: array
+              uniqueItems: true
+              items: { $ref: '#/components/schemas/ExtraId' }
+              default: []
+
+    AvailabilityItem:
+      type: object
+      required: [available, reason, unavailable_dates]
+      properties:
+        available: { type: boolean }
+        reason:
+          type: [string, 'null']
+          description: |
+            - `blocked_date`: il gestore ha bloccato almeno un giorno del periodo
+            - `capacity_full`: posti esauriti in almeno un giorno
+            - `service_disabled`: servizio non attivo o con capacità 0
+          enum: [blocked_date, capacity_full, service_disabled, null]
+        unavailable_dates:
+          type: array
+          items: { type: string, format: date }
+
+    Availability:
+      type: object
+      required: [available, parking, extras]
+      properties:
+        available:
+          type: boolean
+          description: Vero se parcheggio e tutti i servizi richiesti sono disponibili.
+        parking: { $ref: '#/components/schemas/AvailabilityItem' }
+        extras:
+          type: object
+          description: Solo i servizi a capacità limitata richiesti.
+          propertyNames: { $ref: '#/components/schemas/ExtraId' }
+          additionalProperties: { $ref: '#/components/schemas/AvailabilityItem' }
+
+    DiscountCheck:
+      type: object
+      required: [code, valid, reason, type, percentage, amount, valid_until]
+      properties:
+        code: { type: string, description: Normalizzato in maiuscolo. }
+        valid: { type: boolean }
+        reason:
+          type: [string, 'null']
+          enum: [not_found, expired, exhausted, null]
+        type:
+          type: [string, 'null']
+          enum: [percentage, fixed_amount, null]
+        percentage: { type: [integer, 'null'], minimum: 1, maximum: 100 }
+        amount:
+          oneOf:
+            - $ref: '#/components/schemas/Money'
+            - type: 'null'
+        valid_until: { type: [string, 'null'], format: date }
+
+    QuoteRequest:
+      allOf:
+        - $ref: '#/components/schemas/AvailabilityRequest'
+        - type: object
+          required: [payment_method]
+          properties:
+            payment_method: { $ref: '#/components/schemas/PaymentMethod' }
+            discount_code: { type: [string, 'null'], maxLength: 50 }
+
+    Stay:
+      type: object
+      required: [start, end, duration_minutes, billable_days, days_after_30]
+      properties:
+        start: { $ref: '#/components/schemas/DateTimeWithOffset' }
+        end: { $ref: '#/components/schemas/DateTimeWithOffset' }
+        duration_minutes: { type: integer }
+        billable_days:
+          type: integer
+          description: |
+            Giorni fatturati: minimo 1; oltre le 24 ore conta un giorno in più
+            solo se l'eccedenza supera 15 minuti.
+        days_after_30:
+          type: integer
+          description: Giorni oltre il 30°, già compresi in `billable_days`.
+
+    QuoteLine:
+      type: object
+      required: [type, code, description, quantity, unit_price, total]
+      properties:
+        type: { type: string, enum: [parking, extra, payment_fee, info] }
+        code: { type: string, description: '`parking`, un `ExtraId` oppure un `PaymentMethod`.' }
+        description: { type: string }
+        quantity: { type: integer, minimum: 1 }
+        unit_price:
+          description: Valorizzato per le voci a prezzo unitario; `null` per i forfait.
+          oneOf:
+            - $ref: '#/components/schemas/Money'
+            - type: 'null'
+        total: { $ref: '#/components/schemas/Money' }
+
+    AppliedDiscount:
+      type: object
+      required: [code, applied, reason, type, percentage, amount]
+      properties:
+        code: { type: string }
+        applied: { type: boolean }
+        reason: { type: [string, 'null'], enum: [not_found, expired, exhausted, null] }
+        type: { type: [string, 'null'], enum: [percentage, fixed_amount, null] }
+        percentage: { type: [integer, 'null'] }
+        amount:
+          description: Importo effettivamente scontato (mai oltre il subtotale).
+          oneOf:
+            - $ref: '#/components/schemas/Money'
+            - type: 'null'
+
+    Quote:
+      type: object
+      required: [id, status, expires_at, stay, extras, payment_method, lines, subtotal, discount, total, bookable, availability, cancellation]
+      properties:
+        id: { type: string, format: uuid }
+        status:
+          type: string
+          description: '`active` utilizzabile, `expired` scaduto, `used` già convertito in prenotazione.'
+          enum: [active, expired, used]
+        expires_at: { $ref: '#/components/schemas/DateTimeWithOffset' }
+        stay: { $ref: '#/components/schemas/Stay' }
+        extras:
+          type: array
+          items: { $ref: '#/components/schemas/ExtraId' }
+        payment_method: { $ref: '#/components/schemas/PaymentMethod' }
+        lines:
+          type: array
+          items: { $ref: '#/components/schemas/QuoteLine' }
+        subtotal: { $ref: '#/components/schemas/Money' }
+        discount:
+          oneOf:
+            - $ref: '#/components/schemas/AppliedDiscount'
+            - type: 'null'
+        total:
+          $ref: '#/components/schemas/Money'
+          description: Subtotale meno sconto, compreso tra 0 e il subtotale.
+        bookable:
+          type: boolean
+          description: Falso se il periodo o un servizio non è disponibile.
+        availability: { $ref: '#/components/schemas/Availability' }
+        cancellation:
+          type: object
+          required: [free_until]
+          properties:
+            free_until: { $ref: '#/components/schemas/DateTimeWithOffset' }
+
+    Customer:
+      type: object
+      required: [first_name, last_name, email, phone]
+      properties:
+        first_name: { type: string, maxLength: 100 }
+        last_name: { type: string, maxLength: 100 }
+        email: { type: string, format: email, maxLength: 255 }
+        phone: { type: string, maxLength: 30, description: Preferibilmente in formato internazionale. }
+
+    Billing:
+      type: object
+      description: Dati per la fattura. Se assenti, viene emessa una semplice ricevuta.
+      required: [name, country]
+      properties:
+        name: { type: string, description: Ragione sociale o nome e cognome. }
+        vat_number: { type: [string, 'null'], description: 'Partita IVA, anche UE con prefisso del paese (es. DE123456789).' }
+        tax_code: { type: [string, 'null'], description: Codice fiscale. }
+        address: { type: [string, 'null'] }
+        postal_code: { type: [string, 'null'] }
+        city: { type: [string, 'null'] }
+        province: { type: [string, 'null'], maxLength: 2 }
+        country: { type: string, minLength: 2, maxLength: 2, example: IT }
+        sdi_code: { type: [string, 'null'], description: Codice destinatario per la fatturazione elettronica. }
+        pec: { type: [string, 'null'], format: email }
+
+    Vehicle:
+      type: object
+      required: [plate]
+      properties:
+        plate: { type: string, maxLength: 15, description: 'Normalizzata in maiuscolo e senza spazi.' }
+        make: { type: [string, 'null'], maxLength: 50 }
+        model: { type: [string, 'null'], maxLength: 50 }
+
+    Travel:
+      type: object
+      required: [passengers]
+      properties:
+        outbound_flight: { type: [string, 'null'], maxLength: 20 }
+        return_flight: { type: [string, 'null'], maxLength: 20 }
+        passengers: { type: integer, minimum: 1, maximum: 9 }
+
+    Consents:
+      type: object
+      required: [privacy]
+      properties:
+        privacy: { type: boolean, const: true, description: Obbligatorio. }
+        marketing: { type: boolean, default: false }
+
+    ReservationRequest:
+      type: object
+      required: [quote_id, customer, vehicle, travel, consents]
+      properties:
+        quote_id: { type: string, format: uuid }
+        customer: { $ref: '#/components/schemas/Customer' }
+        vehicle: { $ref: '#/components/schemas/Vehicle' }
+        travel: { $ref: '#/components/schemas/Travel' }
+        billing:
+          oneOf:
+            - $ref: '#/components/schemas/Billing'
+            - type: 'null'
+        notes: { type: [string, 'null'], maxLength: 1000 }
+        referral:
+          type: [string, 'null']
+          maxLength: 50
+          description: Codice di provenienza (ex `?ref=`).
+        consents: { $ref: '#/components/schemas/Consents' }
+
+    ReservationStatus:
+      type: string
+      description: |
+        - `pending_payment`: creata, in attesa del pagamento online
+        - `confirmed`: confermata, da pagare in parcheggio
+        - `paid`: pagata online
+        - `completed`: sosta conclusa
+        - `cancelled`: annullata
+        - `expired`: pagamento online non completato in tempo
+      enum: [pending_payment, confirmed, paid, completed, cancelled, expired]
+
+    Payment:
+      type: object
+      required: [method, status, amount, due_by, paid_at]
+      properties:
+        method: { $ref: '#/components/schemas/PaymentMethod' }
+        status: { type: string, enum: [pending, paid, due_on_site, refunded, none] }
+        amount: { $ref: '#/components/schemas/Money' }
+        due_by:
+          description: Termine per il pagamento online, poi la prenotazione scade.
+          oneOf:
+            - $ref: '#/components/schemas/DateTimeWithOffset'
+            - type: 'null'
+        paid_at:
+          oneOf:
+            - $ref: '#/components/schemas/DateTimeWithOffset'
+            - type: 'null'
+
+    Reservation:
+      type: object
+      required: [id, number, status, channel, created_at, stay, lines, subtotal, discount, total, customer, vehicle, travel, payment, cancellation, notifications]
+      properties:
+        id: { type: string, format: uuid }
+        number:
+          type: integer
+          description: Numero leggibile da comunicare al cliente (prosegue la numerazione legacy).
+        status: { $ref: '#/components/schemas/ReservationStatus' }
+        channel: { type: string, description: Canale del client che ha creato la prenotazione. }
+        created_at: { $ref: '#/components/schemas/DateTimeWithOffset' }
+        stay: { $ref: '#/components/schemas/Stay' }
+        lines:
+          type: array
+          items: { $ref: '#/components/schemas/QuoteLine' }
+        subtotal: { $ref: '#/components/schemas/Money' }
+        discount:
+          oneOf:
+            - $ref: '#/components/schemas/AppliedDiscount'
+            - type: 'null'
+        total: { $ref: '#/components/schemas/Money' }
+        customer: { $ref: '#/components/schemas/Customer' }
+        vehicle: { $ref: '#/components/schemas/Vehicle' }
+        travel: { $ref: '#/components/schemas/Travel' }
+        payment: { $ref: '#/components/schemas/Payment' }
+        cancellation:
+          type: object
+          required: [free_until, cancelled_at]
+          properties:
+            free_until: { $ref: '#/components/schemas/DateTimeWithOffset' }
+            cancelled_at:
+              oneOf:
+                - $ref: '#/components/schemas/DateTimeWithOffset'
+                - type: 'null'
+        notifications:
+          type: object
+          required: [email_sent]
+          properties:
+            email_sent: { type: boolean }
+
+    PaypalOrder:
+      type: object
+      required: [order_id, amount, status]
+      properties:
+        order_id: { type: string }
+        amount: { $ref: '#/components/schemas/Money' }
+        status: { type: string, enum: [CREATED, APPROVED, COMPLETED] }
+
+    CancellationPreview:
+      type: object
+      required: [reservation, cancellable, reason, deadline, refund_required]
+      properties:
+        reservation:
+          type: object
+          required: [number, status, start, end, plate]
+          properties:
+            number: { type: integer }
+            status: { $ref: '#/components/schemas/ReservationStatus' }
+            start: { $ref: '#/components/schemas/DateTimeWithOffset' }
+            end: { $ref: '#/components/schemas/DateTimeWithOffset' }
+            plate: { type: string }
+        cancellable: { type: boolean }
+        reason:
+          type: [string, 'null']
+          enum: [cancellation_window_closed, already_cancelled, not_cancellable_status, null]
+        deadline:
+          $ref: '#/components/schemas/DateTimeWithOffset'
+          description: Ultimo momento per la cancellazione gratuita.
+        refund_required:
+          type: boolean
+          description: Vero se la prenotazione è stata pagata online e serve un rimborso.
+
+    CancellationRequest:
+      type: object
+      properties:
+        reason: { type: [string, 'null'], maxLength: 500 }
+        refund:
+          description: Obbligatorio se `refund_required` è vero nell'anteprima.
+          oneOf:
+            - type: object
+              required: [tax_code]
+              properties:
+                tax_code: { type: string, description: Codice fiscale dell'intestatario del pagamento. }
+                notes: { type: [string, 'null'], maxLength: 500 }
+            - type: 'null'
+
+    CancellationResult:
+      type: object
+      required: [number, status, cancelled_at, notifications]
+      properties:
+        number: { type: integer }
+        status: { $ref: '#/components/schemas/ReservationStatus' }
+        cancelled_at: { $ref: '#/components/schemas/DateTimeWithOffset' }
+        notifications:
+          type: object
+          required: [email_sent]
+          properties:
+            email_sent: { type: boolean }
+
+    WebhookEvent:
+      type: object
+      required: [id, type, created_at, data]
+      properties:
+        id: { type: string, format: uuid, description: Usalo per scartare i duplicati. }
+        type: { type: string, enum: [reservation.created, reservation.paid, reservation.cancelled] }
+        created_at: { $ref: '#/components/schemas/DateTimeWithOffset' }
+        data:
+          type: object
+          required: [reservation]
+          properties:
+            reservation: { $ref: '#/components/schemas/Reservation' }
+
+    Problem:
+      type: object
+      description: Errore RFC 9457 con `code` stabile.
+      required: [type, title, status, code]
+      properties:
+        type: { type: string, format: uri }
+        title: { type: string }
+        status: { type: integer }
+        code:
+          type: string
+          enum:
+            - unauthenticated
+            - forbidden
+            - not_found
+            - validation_failed
+            - rate_limited
+            - idempotency_conflict
+            - price_list_not_found
+            - extras_incompatible
+            - extra_unavailable
+            - dates_unavailable
+            - quote_expired
+            - quote_used
+            - quote_mismatch
+            - reservation_not_payable
+            - payment_not_verified
+            - payment_provider_error
+            - already_cancelled
+            - cancellation_window_closed
+        detail: { type: string }
+        errors:
+          type: object
+          description: Solo per `validation_failed` ed `extras_incompatible`; chiavi in notazione puntata.
+          additionalProperties:
+            type: array
+            items: { type: string }
+        unavailable_dates:
+          type: array
+          description: Solo per `dates_unavailable`.
+          items: { type: string, format: date }
+        quote:
+          $ref: '#/components/schemas/Quote'
+          description: Solo per `quote_mismatch`, con il nuovo preventivo.

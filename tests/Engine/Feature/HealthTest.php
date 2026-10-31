@@ -2,12 +2,16 @@
 
 use Illuminate\Support\Facades\DB;
 use Tests\Concerns\RefreshEngineDatabase;
+use Tests\Concerns\ValidatesOpenApi;
 
-uses(RefreshEngineDatabase::class);
+uses(RefreshEngineDatabase::class, ValidatesOpenApi::class);
 
 it('risponde ok quando il database del motore è raggiungibile', function () {
-    $this->getJson('/api/v1/health')
-        ->assertOk()
+    $response = $this->getJson('/api/v1/health');
+
+    $this->assertMatchesOpenApi($response, '/health', 'get');
+
+    $response->assertOk()
         ->assertExactJson([
             'status' => 'ok',
             'api_version' => 'v1',

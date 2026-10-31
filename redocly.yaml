@@ -1,0 +1,6 @@
+# Lint della spec del motore: npx @redocly/cli lint openapi/v1.yaml
+extends:
+  - recommended
+rules:
+  # I server di esempio (Cloud e localhost) sono voluti.
+  no-server-example.com: off

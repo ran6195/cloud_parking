@@ -3,6 +3,19 @@
 Registro dei file creati e modificati per il motore prenotazioni (`App\Engine`).
 Piano di riferimento: `docs/piano_motore_api.md`.
 
+## Fase 1 — Spec OpenAPI v1 (2026-10-31, bozza da revisionare)
+
+### Creati
+- `openapi/v1.yaml`: contratto OpenAPI 3.1 del motore (13 operazioni, 3 webhook in uscita, esempi validati).
+- `redocly.yaml`, `.redocly.lint-ignore.yaml`: configurazione del lint (`composer openapi:lint`).
+- `tests/Concerns/ValidatesOpenApi.php`: `assertMatchesOpenApi()` valida le risposte reali contro la spec.
+- `tests/Engine/Feature/OpenApiContractTest.php`: ogni rotta `engine.v1.*` deve comparire nella spec.
+
+### Modificati
+- `tests/Engine/Feature/HealthTest.php`: la risposta di `/health` viene validata contro la spec.
+- `composer.json`, `composer.lock`: `osteel/openapi-httpfoundation-testing` ^0.15 (dev) e script `openapi:lint`.
+- `docs/piano_motore_api.md`: la tabella endpoint rimanda alla spec; pagamenti PayPal in due passi.
+
 ## Fase 0 — Setup (2026-10-31)
 
 ### Creati

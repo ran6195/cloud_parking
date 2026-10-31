@@ -62,6 +62,8 @@ Tabella `engine.api_clients`: nome, `canale`, chiave pubblicabile, chiave segret
 
 ## 4. Endpoint v1 (bozza)
 
+> Dalla fase 1 la fonte di verità è `openapi/v1.yaml`: questa tabella è solo un riassunto.
+
 | Metodo | Path | Scopo |
 |---|---|---|
 | GET | `/api/v1/extras` | servizi attivi, con prezzo, tipo e messaggio |
@@ -72,7 +74,8 @@ Tabella `engine.api_clients`: nome, `canale`, chiave pubblicabile, chiave segret
 | POST | `/api/v1/discounts/check` | verifica del codice (anche implicita in `quotes`) |
 | POST | `/api/v1/reservations` | `{quote_id, payment_method, customer, vehicle, flight, notes, consents}` + `Idempotency-Key` |
 | GET | `/api/v1/reservations/{id}` | stato e dettaglio (solo `sk_` del canale, oppure token del cliente) |
-| POST | `/api/v1/reservations/{id}/payments/paypal` | `{order_id}` → verifica lato server presso PayPal, idempotente |
+| POST | `/api/v1/reservations/{id}/payments/paypal/orders` | il server crea l'ordine PayPal con l'importo della prenotazione |
+| POST | `/api/v1/reservations/{id}/payments/paypal/capture` | `{order_id}` → cattura e verifica lato server, idempotente |
 | GET | `/api/v1/cancellations/{token}` | anteprima: annullabile? fino a quando? |
 | POST | `/api/v1/cancellations/{token}` | `{motivo, dati_rimborso}` |
 | POST | `/api/v1/webhooks/paypal` | rete di sicurezza `PAYMENT.CAPTURE.COMPLETED` |
