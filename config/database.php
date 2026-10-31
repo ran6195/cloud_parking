@@ -99,6 +99,26 @@ return [
             'sslmode' => env('DB_SSLMODE', 'prefer'),
         ],
 
+        /*
+         * Motore prenotazioni (App\Engine): sempre Postgres, in uno schema dedicato.
+         * Su Laravel Cloud eredita le credenziali DB_* e usa lo schema "engine" dello
+         * stesso database del CMS; in locale punta al container di docker-compose.yml.
+         */
+        'engine' => [
+            'driver' => 'pgsql',
+            'url' => env('ENGINE_DB_URL', env('DB_URL')),
+            'host' => env('ENGINE_DB_HOST', env('DB_HOST', '127.0.0.1')),
+            'port' => env('ENGINE_DB_PORT', env('DB_PORT', '5432')),
+            'database' => env('ENGINE_DB_DATABASE', env('DB_DATABASE', 'parking')),
+            'username' => env('ENGINE_DB_USERNAME', env('DB_USERNAME', 'parking')),
+            'password' => env('ENGINE_DB_PASSWORD', env('DB_PASSWORD', '')),
+            'charset' => 'utf8',
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'search_path' => env('ENGINE_DB_SCHEMA', 'engine'),
+            'sslmode' => env('ENGINE_DB_SSLMODE', env('DB_SSLMODE', 'prefer')),
+        ],
+
         'sqlsrv' => [
             'driver' => 'sqlsrv',
             'url' => env('DB_URL'),

@@ -1,0 +1,9 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+
+# Analisi statica del motore prenotazioni (App\Engine).
+# Il codice del CMS (livello 6: 9 errori preesistenti) non è ancora incluso.
+parameters:
+    level: 8
+    paths:
+        - app/Engine

@@ -1,0 +1,25 @@
+# Postgres locale per il motore prenotazioni, allineato a Laravel Cloud (Serverless Postgres 18).
+# Avvio: docker compose up -d
+services:
+  postgres:
+    image: postgres:18-alpine
+    container_name: cloud_parking_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${ENGINE_DB_DATABASE:-parking}
+      POSTGRES_USER: ${ENGINE_DB_USERNAME:-parking}
+      POSTGRES_PASSWORD: ${ENGINE_DB_PASSWORD:-parking}
+    ports:
+      - "${ENGINE_DB_PORT:-5432}:5432"
+    volumes:
+      # Postgres 18 salva i dati in una sottocartella versionata di /var/lib/postgresql
+      - postgres_data:/var/lib/postgresql
+      - ./docker/postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  postgres_data:
