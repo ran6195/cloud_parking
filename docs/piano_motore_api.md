@@ -1,6 +1,6 @@
 # Piano: motore prenotazioni e tariffe API-first
 
-Stato: **in corso**, fasi 0–6 completate (aggiornato il 2026-11-05). Riferimento regole di calcolo: `docs/prompt_rebuild_motore_prenotazioni.md`.
+Stato: **in corso**, fasi 0–7 completate (PayPal con gateway simulato) (aggiornato il 2026-11-05). Riferimento regole di calcolo: `docs/prompt_rebuild_motore_prenotazioni.md`.
 
 ## 1. Principi
 
@@ -142,6 +142,7 @@ Aggiornate il 2026-10-31 con l'analisi del dump legacy (21.800 prenotazioni). �
 12. ✅ **Validità del preventivo**: 30 minuti, come il termine per il pagamento online (2026-11-05). Configurabile con `ENGINE_QUOTE_TTL_MINUTES`.
 13. ✅ **Impostazioni**: tabella `engine.settings` letta da `EngineSettings`; i predefiniti sono i valori del legacy al 31/10/2026 (285 posti, blocco automatico, 3 posti coperti, 3 Tieni le chiavi a 7 €, lavaggi e servizi informativi spenti).
 14. ✅ **Creazione prenotazioni** (2026-11-05): lock globale `pg_advisory_xact_lock`, ricalcolo di prezzo e disponibilità, cliente unico per email con i contatti aggiornati all'ultima prenotazione, `email_sent` = email messe in coda. Dettagli in `docs/booking.md`.
+15. ✅ **Pagamenti** (2026-11-05): l'ordine lo crea il server; l'incasso è verificato per stato, valuta e importo; un pagamento in ritardo si accetta solo se il posto è ancora libero; i webhook fanno da rete di sicurezza. In sviluppo il gateway è simulato (`ENGINE_PAYMENTS_DRIVER=fake`). Dettagli in `docs/payments.md`.
 
 ## 8. Cosa serve dal gestore
 

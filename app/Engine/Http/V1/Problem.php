@@ -23,6 +23,9 @@ final class Problem
         'quote_expired' => 'Preventivo scaduto',
         'quote_used' => 'Preventivo già usato',
         'quote_mismatch' => 'Il preventivo è cambiato',
+        'reservation_not_payable' => 'Prenotazione non pagabile',
+        'payment_not_verified' => 'Pagamento non verificato',
+        'payment_provider_error' => 'Errore del servizio di pagamento',
     ];
 
     /**

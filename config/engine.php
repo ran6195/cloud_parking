@@ -18,6 +18,7 @@ return [
         'default' => (int) env('ENGINE_RATE_LIMIT', 120),
         'discounts' => (int) env('ENGINE_RATE_LIMIT_DISCOUNTS', 10),
         'reservations' => (int) env('ENGINE_RATE_LIMIT_RESERVATIONS', 20),
+        'webhooks' => (int) env('ENGINE_RATE_LIMIT_WEBHOOKS', 120),
     ],
 
     // Durata delle Idempotency-Key.
@@ -28,6 +29,17 @@ return [
 
     // Pagina dell'interfaccia per annullare, linkata nell'email di conferma. {token} = token di cancellazione.
     'cancellation_url' => env('ENGINE_CANCELLATION_URL'),
+
+    // Pagamenti online. "fake" simula PayPal (sviluppo e test) ed è vietato in produzione.
+    'payments' => [
+        'driver' => env('ENGINE_PAYMENTS_DRIVER', 'fake'),
+        'paypal' => [
+            'mode' => env('PAYPAL_MODE', 'sandbox'),
+            'client_id' => env('PAYPAL_CLIENT_ID'),
+            'secret' => env('PAYPAL_SECRET'),
+            'webhook_id' => env('PAYPAL_WEBHOOK_ID'),
+        ],
+    ],
 
     // Base del campo "type" dei problem+json: <base><code>.
     'problem_type_base' => env('ENGINE_PROBLEM_TYPE_BASE', 'https://docs.parcheggio.example/errors/'),

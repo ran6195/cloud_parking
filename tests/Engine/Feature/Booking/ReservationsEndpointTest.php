@@ -25,45 +25,12 @@ beforeEach(function () {
     ['client' => $this->client, 'headers' => $this->headers] = EngineApi::client();
 });
 
-/**
- * Crea un preventivo via API (3 giorni a novembre 2026, posto coperto) e ne restituisce l'id.
- *
- * @param  array<string, mixed>  $overrides
- */
-function quoteId(object $test, array $overrides = []): string
-{
-    return $test->postJson('/api/v1/quotes', $overrides + [
-        'start' => '2026-11-20T08:00:00+01:00',
-        'end' => '2026-11-23T07:00:00+01:00',
-        'extras' => ['covered_parking'],
-        'payment_method' => 'on_site',
-    ], $test->headers)->assertCreated()->json('id');
-}
-
-/**
- * @param  array<string, mixed>  $overrides
- * @return array<string, mixed>
- */
-function reservationBody(string $quoteId, array $overrides = []): array
-{
-    return array_replace_recursive([
-        'quote_id' => $quoteId,
-        'customer' => ['first_name' => 'Maria', 'last_name' => 'Rossi', 'email' => 'maria.rossi@example.com', 'phone' => '+39 333 123 4567'],
-        'vehicle' => ['plate' => 'ab 123 cd', 'make' => 'Fiat', 'model' => 'Panda'],
-        'travel' => ['outbound_flight' => 'FR1234', 'return_flight' => 'FR1235', 'passengers' => 2],
-        'billing' => null,
-        'notes' => 'Bagaglio ingombrante.',
-        'referral' => 'partner-hotel',
-        'consents' => ['privacy' => true, 'marketing' => false],
-    ], $overrides);
-}
-
 it('crea una prenotazione da pagare in parcheggio, con email e ricevuta', function () {
     app(EngineSettings::class)->set('contact.email', 'gestore@example.com');
     config(['engine.cancellation_url' => 'https://sostablq.example/annulla/{token}']);
-    $quoteId = quoteId($this);
+    $quoteId = EngineApi::createQuote($this, $this->headers);
 
-    $response = $this->postJson('/api/v1/reservations', reservationBody($quoteId), $this->headers);
+    $response = $this->postJson('/api/v1/reservations', EngineApi::reservationBody($quoteId), $this->headers);
 
     $this->assertMatchesOpenApi($response, '/reservations', 'post');
     $reservation = Reservation::query()->with(['customer', 'lines'])->sole();
@@ -97,7 +64,7 @@ it('crea una prenotazione da pagare in parcheggio, con email e ricevuta', functi
 });
 
 it('rende le email con il riepilogo della prenotazione', function () {
-    $this->postJson('/api/v1/reservations', reservationBody(quoteId($this)), $this->headers)->assertCreated();
+    $this->postJson('/api/v1/reservations', EngineApi::reservationBody(EngineApi::createQuote($this, $this->headers)), $this->headers)->assertCreated();
     $reservation = Reservation::query()->sole();
 
     $html = (new ReservationConfirmed($reservation, 'Sosta BLQ', '051 41 133 31', null))->render();
@@ -110,7 +77,7 @@ it('rende le email con il riepilogo della prenotazione', function () {
 });
 
 it('con il pagamento online la prenotazione attende il pagamento per 30 minuti, senza email', function () {
-    $response = $this->postJson('/api/v1/reservations', reservationBody(quoteId($this, ['payment_method' => 'online'])), $this->headers);
+    $response = $this->postJson('/api/v1/reservations', EngineApi::reservationBody(EngineApi::createQuote($this, $this->headers, ['payment_method' => 'online'])), $this->headers);
 
     $this->assertMatchesOpenApi($response, '/reservations', 'post');
     $response->assertCreated()
@@ -124,8 +91,8 @@ it('con il pagamento online la prenotazione attende il pagamento per 30 minuti, 
 });
 
 it('riusa il cliente con la stessa email e ne aggiorna i contatti', function () {
-    $this->postJson('/api/v1/reservations', reservationBody(quoteId($this)), $this->headers)->assertCreated();
-    $this->postJson('/api/v1/reservations', reservationBody(quoteId($this, ['extras' => []]), [
+    $this->postJson('/api/v1/reservations', EngineApi::reservationBody(EngineApi::createQuote($this, $this->headers)), $this->headers)->assertCreated();
+    $this->postJson('/api/v1/reservations', EngineApi::reservationBody(EngineApi::createQuote($this, $this->headers, ['extras' => []]), [
         'customer' => ['email' => 'MARIA.ROSSI@example.com', 'phone' => '+39 347 000 0000'],
     ]), $this->headers)->assertCreated();
 
@@ -135,29 +102,29 @@ it('riusa il cliente con la stessa email e ne aggiorna i contatti', function () 
 });
 
 it('non riusa un preventivo già usato, scaduto o di un altro client', function () {
-    $quoteId = quoteId($this);
-    $this->postJson('/api/v1/reservations', reservationBody($quoteId), $this->headers)->assertCreated();
+    $quoteId = EngineApi::createQuote($this, $this->headers);
+    $this->postJson('/api/v1/reservations', EngineApi::reservationBody($quoteId), $this->headers)->assertCreated();
 
-    $used = $this->postJson('/api/v1/reservations', reservationBody($quoteId), $this->headers);
+    $used = $this->postJson('/api/v1/reservations', EngineApi::reservationBody($quoteId), $this->headers);
     $this->assertMatchesOpenApi($used, '/reservations', 'post');
     $used->assertConflict()->assertJsonPath('code', 'quote_used');
 
-    $expiring = quoteId($this, ['extras' => []]);
+    $expiring = EngineApi::createQuote($this, $this->headers, ['extras' => []]);
     EngineApi::freezeClock('2026-11-05 12:31:00 Europe/Rome');
-    $this->postJson('/api/v1/reservations', reservationBody($expiring), $this->headers)
+    $this->postJson('/api/v1/reservations', EngineApi::reservationBody($expiring), $this->headers)
         ->assertConflict()->assertJsonPath('code', 'quote_expired');
 
-    $this->postJson('/api/v1/reservations', reservationBody($expiring), EngineApi::client('pwa')['headers'])
+    $this->postJson('/api/v1/reservations', EngineApi::reservationBody($expiring), EngineApi::client('pwa')['headers'])
         ->assertNotFound()->assertJsonPath('code', 'not_found');
-    $this->postJson('/api/v1/reservations', reservationBody('0193c4d2-7b1e-7cc4-9a51-3f0d2a8e6b10'), $this->headers)
+    $this->postJson('/api/v1/reservations', EngineApi::reservationBody('0193c4d2-7b1e-7cc4-9a51-3f0d2a8e6b10'), $this->headers)
         ->assertNotFound();
 });
 
 it('propone un nuovo preventivo se il prezzo è cambiato', function () {
-    $quoteId = quoteId($this);
+    $quoteId = EngineApi::createQuote($this, $this->headers);
     Price::query()->where('days', 3)->update(['amount_cents' => 3000]);
 
-    $response = $this->postJson('/api/v1/reservations', reservationBody($quoteId), $this->headers);
+    $response = $this->postJson('/api/v1/reservations', EngineApi::reservationBody($quoteId), $this->headers);
 
     $this->assertMatchesOpenApi($response, '/reservations', 'post');
     $response->assertConflict()
@@ -173,10 +140,10 @@ it('propone un nuovo preventivo se il prezzo è cambiato', function () {
 
 it('avvisa se il codice sconto non vale più', function () {
     Discount::factory()->create(['code' => 'UNO', 'percentage' => 10, 'max_uses' => 1]);
-    $quoteId = quoteId($this, ['discount_code' => 'uno']);
+    $quoteId = EngineApi::createQuote($this, $this->headers, ['discount_code' => 'uno']);
     Reservation::factory()->create(['discount_id' => Discount::query()->value('id')]);
 
-    $this->postJson('/api/v1/reservations', reservationBody($quoteId), $this->headers)
+    $this->postJson('/api/v1/reservations', EngineApi::reservationBody($quoteId), $this->headers)
         ->assertConflict()
         ->assertJsonPath('code', 'quote_mismatch')
         ->assertJsonPath('detail', 'Il codice sconto non è più valido. Il nuovo preventivo è nel campo quote.')
@@ -185,10 +152,10 @@ it('avvisa se il codice sconto non vale più', function () {
 
 it('rifiuta le date non più disponibili', function () {
     app(EngineSettings::class)->set('extras.covered_parking', ['capacity' => 1]);
-    $quoteId = quoteId($this);
+    $quoteId = EngineApi::createQuote($this, $this->headers);
     Reservation::factory()->between('2026-11-21 08:00', '2026-11-22 08:00')->withExtra('covered_parking')->create();
 
-    $response = $this->postJson('/api/v1/reservations', reservationBody($quoteId), $this->headers);
+    $response = $this->postJson('/api/v1/reservations', EngineApi::reservationBody($quoteId), $this->headers);
 
     $this->assertMatchesOpenApi($response, '/reservations', 'post');
     $response->assertConflict()
@@ -200,7 +167,7 @@ it('rifiuta le date non più disponibili', function () {
 });
 
 it('valida i dati del cliente', function (array $overrides, string $field, string $message) {
-    $response = $this->postJson('/api/v1/reservations', reservationBody(quoteId($this), $overrides), $this->headers);
+    $response = $this->postJson('/api/v1/reservations', EngineApi::reservationBody(EngineApi::createQuote($this, $this->headers), $overrides), $this->headers);
 
     $this->assertMatchesOpenApi($response, '/reservations', 'post');
     $response->assertUnprocessable()->assertJsonPath('code', 'validation_failed');
@@ -214,7 +181,7 @@ it('valida i dati del cliente', function (array $overrides, string $field, strin
 ]);
 
 it('crea la prenotazione una volta sola con la stessa Idempotency-Key', function () {
-    $body = reservationBody(quoteId($this));
+    $body = EngineApi::reservationBody(EngineApi::createQuote($this, $this->headers));
     $headers = $this->headers + ['Idempotency-Key' => 'chiave-di-prova-1'];
 
     $first = $this->postJson('/api/v1/reservations', $body, $headers)->assertCreated();
@@ -227,13 +194,13 @@ it('crea la prenotazione una volta sola con la stessa Idempotency-Key', function
     expect($replay->getContent())->toBe($first->getContent())
         ->and(Reservation::query()->count())->toBe(1);
 
-    $other = $this->postJson('/api/v1/reservations', reservationBody(quoteId($this, ['extras' => []])), $headers);
+    $other = $this->postJson('/api/v1/reservations', EngineApi::reservationBody(EngineApi::createQuote($this, $this->headers, ['extras' => []])), $headers);
     $this->assertMatchesOpenApi($other, '/reservations', 'post');
     $other->assertConflict()->assertJsonPath('code', 'idempotency_conflict');
 });
 
 it('ripete anche gli errori salvati e rifiuta chiavi troppo corte', function () {
-    $body = reservationBody(quoteId($this), ['consents' => ['privacy' => false]]);
+    $body = EngineApi::reservationBody(EngineApi::createQuote($this, $this->headers), ['consents' => ['privacy' => false]]);
     $headers = $this->headers + ['Idempotency-Key' => 'chiave-errore'];
 
     $this->postJson('/api/v1/reservations', $body, $headers)->assertUnprocessable();
@@ -250,7 +217,7 @@ it('ripete anche gli errori salvati e rifiuta chiavi troppo corte', function () 
 it('crea la prenotazione anche se le email non partono', function () {
     Mail::shouldReceive('to')->andThrow(new RuntimeException('SMTP non raggiungibile'));
 
-    $this->postJson('/api/v1/reservations', reservationBody(quoteId($this)), $this->headers)
+    $this->postJson('/api/v1/reservations', EngineApi::reservationBody(EngineApi::createQuote($this, $this->headers)), $this->headers)
         ->assertCreated()
         ->assertJsonPath('status', 'confirmed')
         ->assertJsonPath('notifications.email_sent', false);
@@ -259,7 +226,7 @@ it('crea la prenotazione anche se le email non partono', function () {
 });
 
 it('fa leggere la prenotazione solo con la chiave segreta del canale', function () {
-    $id = $this->postJson('/api/v1/reservations', reservationBody(quoteId($this)), $this->headers)->json('id');
+    $id = $this->postJson('/api/v1/reservations', EngineApi::reservationBody(EngineApi::createQuote($this, $this->headers)), $this->headers)->json('id');
 
     $own = $this->getJson("/api/v1/reservations/{$id}", $this->headers);
     $this->assertMatchesOpenApi($own, '/reservations/{reservationId}', 'get');

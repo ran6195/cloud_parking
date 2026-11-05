@@ -5,6 +5,8 @@ namespace App\Engine\Http\V1;
 use App\Engine\Application\Exceptions\DatesUnavailable;
 use App\Engine\Application\Exceptions\QuoteMismatch;
 use App\Engine\Application\Exceptions\QuoteNotUsable;
+use App\Engine\Application\Exceptions\ReservationNotPayable;
+use App\Engine\Domain\Payments\PaymentProviderError;
 use App\Engine\Domain\Pricing\Exceptions\IncompatibleExtras;
 use App\Engine\Domain\Pricing\Exceptions\InvalidStay;
 use App\Engine\Domain\Shared\Clock;
@@ -32,7 +34,8 @@ final class ProblemRenderer
 
         return match (true) {
             $e instanceof ValidationException => Problem::validation(self::errors($e)),
-            $e instanceof QuoteNotUsable => Problem::response(409, $e->errorCode(), $e->getMessage()),
+            $e instanceof QuoteNotUsable, $e instanceof ReservationNotPayable => Problem::response(409, $e->errorCode(), $e->getMessage()),
+            $e instanceof PaymentProviderError => Problem::response(502, $e->errorCode(), $e->getMessage()),
             $e instanceof DatesUnavailable => Problem::response(409, $e->errorCode(), $e->getMessage(), ['unavailable_dates' => $e->unavailableDates]),
             $e instanceof QuoteMismatch => Problem::response(409, $e->errorCode(), $e->getMessage(), [
                 'quote' => QuotePresenter::present($e->newQuote, CarbonImmutable::instance(app(Clock::class)->now())),

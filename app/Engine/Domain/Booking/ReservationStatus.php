@@ -10,7 +10,8 @@ use DateTimeImmutable;
  *   pending_payment → paid | expired | cancelled
  *   confirmed       → completed | cancelled
  *   paid            → completed | cancelled
- *   completed, cancelled, expired: finali
+ *   expired         → paid (pagamento arrivato in ritardo, se il posto è ancora libero)
+ *   completed, cancelled: finali
  */
 enum ReservationStatus: string
 {
@@ -39,7 +40,8 @@ enum ReservationStatus: string
         return match ($this) {
             self::PendingPayment => [self::Paid, self::Expired, self::Cancelled],
             self::Confirmed, self::Paid => [self::Completed, self::Cancelled],
-            self::Completed, self::Cancelled, self::Expired => [],
+            self::Expired => [self::Paid],
+            self::Completed, self::Cancelled => [],
         };
     }
 

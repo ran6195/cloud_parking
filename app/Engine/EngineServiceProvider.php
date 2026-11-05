@@ -8,6 +8,7 @@ use App\Engine\Console\ExpirePendingReservationsCommand;
 use App\Engine\Console\ImportLegacyExceptionsCommand;
 use App\Engine\Domain\Availability\AvailabilityChecker;
 use App\Engine\Domain\Availability\AvailabilityData;
+use App\Engine\Domain\Payments\PaymentGateway;
 use App\Engine\Domain\Pricing\Discount\DiscountFinder;
 use App\Engine\Domain\Pricing\Discount\DiscountPolicy;
 use App\Engine\Domain\Pricing\PreviousYearsTariffSource;
@@ -19,6 +20,8 @@ use App\Engine\Domain\Shared\SystemClock;
 use App\Engine\Http\V1\Middleware\EngineCors;
 use App\Engine\Http\V1\ProblemRenderer;
 use App\Engine\Infrastructure\Availability\DatabaseAvailabilityData;
+use App\Engine\Infrastructure\Payments\FakePaymentGateway;
+use App\Engine\Infrastructure\Payments\PayPalGateway;
 use App\Engine\Infrastructure\Pricing\DatabaseDiscountFinder;
 use App\Engine\Infrastructure\Pricing\DatabaseTariffSource;
 use App\Engine\Infrastructure\Receipts\StubReceiptGenerator;
@@ -31,6 +34,7 @@ use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Foundation\Exceptions\Handler;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
+use LogicException;
 
 /**
  * Punto di ingresso del motore prenotazioni. È l'unica classe di App\Engine
@@ -51,6 +55,16 @@ class EngineServiceProvider extends ServiceProvider
         $this->app->bind(DiscountFinder::class, DatabaseDiscountFinder::class);
         $this->app->bind(AvailabilityData::class, DatabaseAvailabilityData::class);
         $this->app->bind(ReceiptGenerator::class, StubReceiptGenerator::class);
+
+        $this->app->singleton(PaymentGateway::class, function (Application $app): PaymentGateway {
+            return match (config('engine.payments.driver')) {
+                'paypal' => PayPalGateway::fromConfig(),
+                'fake' => $app->environment('production')
+                    ? throw new LogicException('Il PayPal simulato non si può usare in produzione: imposta ENGINE_PAYMENTS_DRIVER=paypal.')
+                    : new FakePaymentGateway,
+                default => throw new LogicException('ENGINE_PAYMENTS_DRIVER non valido: usa paypal oppure fake.'),
+            };
+        });
 
         $this->app->bind(TariffSource::class, fn (Application $app) => new PreviousYearsTariffSource(
             new DatabaseTariffSource,

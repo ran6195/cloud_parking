@@ -3,6 +3,27 @@
 Registro dei file creati e modificati per il motore prenotazioni (`App\Engine`).
 Piano di riferimento: `docs/piano_motore_api.md`.
 
+## Fase 7 — Pagamenti PayPal (2026-11-05)
+
+### Creati
+- `app/Engine/Domain/Payments/`: `PaymentGateway` (interfaccia), `GatewayOrder`, `GatewayCapture`, `PaymentProviderError`.
+- `app/Engine/Infrastructure/Payments/PayPalGateway.php`: Orders v2 (token OAuth in cache, `PayPal-Request-Id`, ordine già incassato) e verifica della firma dei webhook.
+- `app/Engine/Infrastructure/Payments/FakePaymentGateway.php`: PayPal simulato per sviluppo e test, vietato in produzione.
+- `app/Engine/Application/PaymentService.php`: creazione e riuso dell'ordine, incasso verificato, pagamento in ritardo solo con il posto libero, webhook `CHECKOUT.ORDER.APPROVED` e `PAYMENT.CAPTURE.COMPLETED`.
+- `app/Engine/Application/Exceptions/`: `ReservationNotPayable` (409), `PaymentNotVerified` (422).
+- `app/Engine/Http/V1/`: `Controllers/PaymentController`, `Controllers/PayPalWebhookController`, `Requests/CapturePaymentRequest`.
+- `docs/payments.md`.
+- `tests/Engine/Feature/Payments/PaypalPaymentsTest.php`, `tests/Engine/Feature/Payments/PayPalGatewayTest.php`.
+
+### Modificati
+- `app/Engine/Domain/Booking/ReservationStatus.php`: `expired → paid` per i pagamenti arrivati in ritardo.
+- `app/Engine/Application/ReservationService.php`: una prenotazione online da 0 € nasce già pagata.
+- `app/Engine/Http/V1/routes.php`: `reservations/{id}/payments/paypal/orders`, `…/capture`, `webhooks/paypal`.
+- `app/Engine/Http/V1/Problem.php`, `ProblemRenderer.php`: `reservation_not_payable`, `payment_not_verified`, `payment_provider_error` (502).
+- `app/Engine/EngineServiceProvider.php`: scelta del gateway (`ENGINE_PAYMENTS_DRIVER`).
+- `config/engine.php`, `.env.example`: configurazione dei pagamenti e limite per i webhook.
+- `tests/Engine/Support/EngineApi.php`: `createQuote()` e `reservationBody()` condivisi; `ReservationsEndpointTest` li usa.
+
 ## Fase 6 — Prenotazione (2026-11-05)
 
 ### Creati

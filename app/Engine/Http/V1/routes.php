@@ -8,6 +8,8 @@
 use App\Engine\Http\V1\Controllers\AvailabilityController;
 use App\Engine\Http\V1\Controllers\DiscountCheckController;
 use App\Engine\Http\V1\Controllers\ExtrasController;
+use App\Engine\Http\V1\Controllers\PaymentController;
+use App\Engine\Http\V1\Controllers\PayPalWebhookController;
 use App\Engine\Http\V1\Controllers\QuoteController;
 use App\Engine\Http\V1\Controllers\ReservationController;
 use App\Engine\Http\V1\Controllers\TariffSummaryController;
@@ -35,3 +37,17 @@ Route::middleware([AuthenticateClient::class, RateLimitClient::class.':discounts
 Route::middleware([AuthenticateClient::class, RateLimitClient::class.':reservations', EnsureIdempotency::class])->group(function (): void {
     Route::post('reservations', [ReservationController::class, 'store'])->name('reservations.store');
 });
+
+Route::middleware([AuthenticateClient::class, RateLimitClient::class.':default', EnsureIdempotency::class])
+    ->prefix('reservations/{reservationId}/payments/paypal')
+    ->whereUuid('reservationId')
+    ->name('payments.paypal.')
+    ->group(function (): void {
+        Route::post('orders', [PaymentController::class, 'createOrder'])->name('orders');
+        Route::post('capture', [PaymentController::class, 'capture'])->name('capture');
+    });
+
+// Chiamato da PayPal: autenticato dalla firma, con un limite per IP.
+Route::post('webhooks/paypal', PayPalWebhookController::class)
+    ->middleware('throttle:'.config('engine.rate_limits.webhooks').',1')
+    ->name('webhooks.paypal');

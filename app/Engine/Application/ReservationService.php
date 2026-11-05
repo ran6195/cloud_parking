@@ -60,7 +60,7 @@ final readonly class ReservationService
             throw new QuoteMismatch($changed->getMessage(), $this->quotes->create($changed->request, $client));
         }
 
-        if ($reservation->status === ReservationStatus::Confirmed) {
+        if (in_array($reservation->status, [ReservationStatus::Confirmed, ReservationStatus::Paid], true)) {
             $this->notifier->confirmed($reservation);
         }
 
@@ -93,14 +93,21 @@ final readonly class ReservationService
             );
         }
 
+        // Online con totale 0 (sconto del 100%): non c'è nulla da incassare, è già pagata.
         $online = $priced->paymentMethod === PaymentMethod::Online;
+        $free = $online && $priced->total->isZero();
         $reservation = Reservation::query()->create([
             'customer_id' => $this->customer($input)->id,
             'api_client_id' => $client->id,
             'quote_id' => $quote->id,
             'discount_id' => $quote->discount_id,
             'channel' => $client->channel,
-            'status' => $online ? ReservationStatus::PendingPayment : ReservationStatus::Confirmed,
+            'status' => match (true) {
+                $free => ReservationStatus::Paid,
+                $online => ReservationStatus::PendingPayment,
+                default => ReservationStatus::Confirmed,
+            },
+            'paid_at' => $free ? $now : null,
             'starts_at' => $quote->starts_at,
             'ends_at' => $quote->ends_at,
             'billable_days' => $priced->duration->billableDays,
@@ -118,7 +125,7 @@ final readonly class ReservationService
             'subtotal_cents' => $priced->subtotal->cents,
             'total_cents' => $priced->total->cents,
             'discount' => QuoteSnapshot::discount($priced->discount),
-            'payment_due_by' => $online ? $now->addMinutes($this->settings->onlinePaymentWindowMinutes()) : null,
+            'payment_due_by' => $online && ! $free ? $now->addMinutes($this->settings->onlinePaymentWindowMinutes()) : null,
         ]);
 
         foreach ($priced->lines as $i => $line) {

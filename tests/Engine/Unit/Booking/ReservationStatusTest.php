@@ -12,5 +12,5 @@ it('consente solo le transizioni previste', function (S $from, array $allowed) {
     'pagata' => [S::Paid, [S::Completed, S::Cancelled]],
     'conclusa' => [S::Completed, []],
     'annullata' => [S::Cancelled, []],
-    'scaduta' => [S::Expired, []],
+    'scaduta' => [S::Expired, [S::Paid]],
 ]);
