@@ -3,6 +3,22 @@
 Registro dei file creati e modificati per il motore prenotazioni (`App\Engine`).
 Piano di riferimento: `docs/piano_motore_api.md`.
 
+## Fase 4 — Disponibilità (2026-11-05)
+
+### Creati
+- `app/Engine/Domain/Availability/`: `AvailabilityChecker`, `AvailabilityData` (interfaccia), `InMemoryAvailabilityData`, `DailyOccupancy`, `CapacityRules`, `Availability`, `AvailabilityItem`, `AvailabilityReason`.
+- `app/Engine/Infrastructure/Availability/DatabaseAvailabilityData.php`: date bloccate e posti occupati per giorno con una query aggregata (`generate_series`); circa 5 ms su 22.000 prenotazioni.
+- `database/engine/migrations/2026_11_05_000005_require_payment_due_by_for_pending_reservations.php`: termine di pagamento obbligatorio per `pending_payment`.
+- `tests/Engine/Unit/Availability/AvailabilityCheckerTest.php`, `tests/Engine/Feature/Availability/DatabaseAvailabilityDataTest.php` (compresa l'equivalenza con l'algoritmo giorno per giorno).
+- `docs/availability.md`: regole con esempio.
+
+### Modificati
+- `app/Engine/Domain/Booking/ReservationStatus.php`: `holdsCapacity()`; le prenotazioni in attesa di pagamento occupano il posto fino al termine.
+- `app/Engine/Domain/Pricing/ExtrasCatalog.php`: `find()` restituisce anche i servizi disattivati.
+- `database/engine/factories/ReservationFactory.php`: `status()` imposta il termine di pagamento, `withExtra()` aggiunge la riga di un servizio.
+- `phpunit.xml`: `memory_limit` a 512M (i test di architettura portano la suite completa oltre 128M).
+- `docs/piano_motore_api.md`: decisioni 6 e 9.
+
 ## Fase 3 — Schema e modelli (2026-11-05)
 
 ### Creati

@@ -36,6 +36,14 @@ final readonly class ExtrasCatalog
         return $active;
     }
 
+    /**
+     * Definizione del servizio, anche se disattivato; null se non configurato.
+     */
+    public function find(ExtraId $id): ?ExtraDefinition
+    {
+        return $this->definitions[$id->value] ?? null;
+    }
+
     public function get(ExtraId $id): ExtraDefinition
     {
         $definition = $this->definitions[$id->value] ?? null;

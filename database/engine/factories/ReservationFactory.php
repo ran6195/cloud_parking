@@ -36,9 +36,35 @@ class ReservationFactory extends Factory
         ];
     }
 
-    public function status(ReservationStatus $status): static
+    /**
+     * In attesa del pagamento, il termine è obbligatorio: di default fra 30 minuti.
+     */
+    public function status(ReservationStatus $status, ?CarbonImmutable $paymentDueBy = null): static
     {
-        return $this->state(['status' => $status]);
+        return $this->state([
+            'status' => $status,
+            'payment_due_by' => $status === ReservationStatus::PendingPayment
+                ? ($paymentDueBy ?? CarbonImmutable::now()->addMinutes(30))
+                : $paymentDueBy,
+        ]);
+    }
+
+    /**
+     * Aggiunge alla prenotazione la riga di un servizio (es. covered_parking, key_drop).
+     */
+    public function withExtra(string $code): static
+    {
+        return $this->afterCreating(function (Reservation $reservation) use ($code): void {
+            $reservation->lines()->create([
+                'position' => (int) $reservation->lines()->max('position') + 1,
+                'type' => 'extra',
+                'code' => $code,
+                'description' => $code,
+                'quantity' => 1,
+                'unit_cents' => 0,
+                'total_cents' => 0,
+            ]);
+        });
     }
 
     public function between(string $start, string $end): static
