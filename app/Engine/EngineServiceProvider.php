@@ -4,6 +4,7 @@ namespace App\Engine;
 
 use App\Engine\Console\CreateApiClientCommand;
 use App\Engine\Console\EngineMigrateCommand;
+use App\Engine\Console\ExpirePendingReservationsCommand;
 use App\Engine\Console\ImportLegacyExceptionsCommand;
 use App\Engine\Domain\Availability\AvailabilityChecker;
 use App\Engine\Domain\Availability\AvailabilityData;
@@ -12,6 +13,7 @@ use App\Engine\Domain\Pricing\Discount\DiscountPolicy;
 use App\Engine\Domain\Pricing\PreviousYearsTariffSource;
 use App\Engine\Domain\Pricing\QuoteCalculator;
 use App\Engine\Domain\Pricing\TariffSource;
+use App\Engine\Domain\Receipts\ReceiptGenerator;
 use App\Engine\Domain\Shared\Clock;
 use App\Engine\Domain\Shared\SystemClock;
 use App\Engine\Http\V1\Middleware\EngineCors;
@@ -19,8 +21,10 @@ use App\Engine\Http\V1\ProblemRenderer;
 use App\Engine\Infrastructure\Availability\DatabaseAvailabilityData;
 use App\Engine\Infrastructure\Pricing\DatabaseDiscountFinder;
 use App\Engine\Infrastructure\Pricing\DatabaseTariffSource;
+use App\Engine\Infrastructure\Receipts\StubReceiptGenerator;
 use App\Engine\Settings\EngineSettings;
 use DateTimeZone;
+use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\Http\Kernel;
@@ -46,6 +50,7 @@ class EngineServiceProvider extends ServiceProvider
         $this->app->scoped(EngineSettings::class);
         $this->app->bind(DiscountFinder::class, DatabaseDiscountFinder::class);
         $this->app->bind(AvailabilityData::class, DatabaseAvailabilityData::class);
+        $this->app->bind(ReceiptGenerator::class, StubReceiptGenerator::class);
 
         $this->app->bind(TariffSource::class, fn (Application $app) => new PreviousYearsTariffSource(
             new DatabaseTariffSource,
@@ -78,6 +83,8 @@ class EngineServiceProvider extends ServiceProvider
             ->name('engine.v1.')
             ->group(__DIR__.'/Http/V1/routes.php');
 
+        $this->loadViewsFrom(__DIR__.'/Resources/views', 'engine');
+
         // Le richieste di preflight (OPTIONS) non passano dai middleware delle rotte.
         $this->app->make(Kernel::class)->prependMiddleware(EngineCors::class);
 
@@ -88,7 +95,17 @@ class EngineServiceProvider extends ServiceProvider
         });
 
         if ($this->app->runningInConsole()) {
-            $this->commands([EngineMigrateCommand::class, ImportLegacyExceptionsCommand::class, CreateApiClientCommand::class]);
+            $this->commands([
+                EngineMigrateCommand::class,
+                ImportLegacyExceptionsCommand::class,
+                CreateApiClientCommand::class,
+                ExpirePendingReservationsCommand::class,
+            ]);
         }
+
+        $this->callAfterResolving(Schedule::class, function (Schedule $schedule): void {
+            $schedule->command('engine:expire-pending')->everyMinute()->withoutOverlapping();
+        });
+
     }
 }

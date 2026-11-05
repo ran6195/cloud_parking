@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use LogicException;
 
 /**
  * Prenotazione. start_date e end_date sono le date locali (Europe/Rome) di
@@ -53,6 +54,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property CarbonImmutable|null $cancelled_at
  * @property string|null $cancellation_reason
  * @property array<string, mixed>|null $refund
+ * @property array<string, mixed>|null $discount esito del codice sconto, copiato dal preventivo
+ * @property CarbonImmutable $created_at
  */
 #[UseFactory(ReservationFactory::class)]
 class Reservation extends EngineModel
@@ -88,6 +91,9 @@ class Reservation extends EngineModel
             'email_sent' => 'boolean',
             'cancelled_at' => 'immutable_datetime',
             'refund' => 'array',
+            'discount' => 'array',
+            'created_at' => 'immutable_datetime',
+            'updated_at' => 'immutable_datetime',
         ];
     }
 
@@ -105,6 +111,19 @@ class Reservation extends EngineModel
         });
     }
 
+    /**
+     * Cambia stato rispettando le transizioni consentite (ReservationStatus).
+     */
+    public function transitionTo(ReservationStatus $next): void
+    {
+        if (! $this->status->canTransitionTo($next)) {
+            throw new LogicException("Transizione non consentita: {$this->status->value} → {$next->value}.");
+        }
+
+        $this->status = $next;
+        $this->save();
+    }
+
     public static function normalizePlate(string $plate): string
     {
         return mb_strtoupper((string) preg_replace('/[\s\-]+/', '', $plate));
@@ -120,7 +139,16 @@ class Reservation extends EngineModel
      */
     public function customer(): BelongsTo
     {
-        return $this->belongsTo(Customer::class);
+        // Un cliente cancellato resta l'intestatario delle sue prenotazioni.
+        return $this->belongsTo(Customer::class)->withTrashed();
+    }
+
+    /**
+     * Il cliente è obbligatorio (chiave esterna non nulla).
+     */
+    public function owner(): Customer
+    {
+        return $this->customer ?? throw new LogicException("Prenotazione {$this->id} senza cliente.");
     }
 
     /**
@@ -142,9 +170,9 @@ class Reservation extends EngineModel
     /**
      * @return BelongsTo<Discount, $this>
      */
-    public function discount(): BelongsTo
+    public function discountCode(): BelongsTo
     {
-        return $this->belongsTo(Discount::class);
+        return $this->belongsTo(Discount::class, 'discount_id');
     }
 
     /**

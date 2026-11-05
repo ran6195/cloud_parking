@@ -18,6 +18,11 @@ final class Problem
         'price_list_not_found' => 'Listino non disponibile',
         'extras_incompatible' => 'Servizi non combinabili',
         'extra_unavailable' => 'Servizio non disponibile',
+        'idempotency_conflict' => 'Richiesta in conflitto',
+        'dates_unavailable' => 'Date non più disponibili',
+        'quote_expired' => 'Preventivo scaduto',
+        'quote_used' => 'Preventivo già usato',
+        'quote_mismatch' => 'Il preventivo è cambiato',
     ];
 
     /**

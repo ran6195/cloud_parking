@@ -28,6 +28,12 @@ final class EngineSettings
         'parking.total_spots' => 285,
         'parking.auto_block' => true,
         'payments.on_site_fee_cents' => 100,
+        // Tempo per completare il pagamento online: intanto il posto resta occupato.
+        'payments.online_window_minutes' => 30,
+        'brand.name' => 'Sosta BLQ',
+        'contact.phone' => '051 41 133 31',
+        // Destinatario delle notifiche al gestore; null = nessuna notifica.
+        'contact.email' => null,
         'cancellation.free_hours_before_start' => 24,
         'pricing.fallback_years' => 5,
         'extras.covered_parking' => [
@@ -95,6 +101,28 @@ final class EngineSettings
     public function cancellationHours(): int
     {
         return $this->int('cancellation.free_hours_before_start');
+    }
+
+    public function onlinePaymentWindowMinutes(): int
+    {
+        return $this->int('payments.online_window_minutes');
+    }
+
+    public function brandName(): string
+    {
+        return (string) $this->get('brand.name');
+    }
+
+    public function contactPhone(): string
+    {
+        return (string) $this->get('contact.phone');
+    }
+
+    public function managerEmail(): ?string
+    {
+        $email = $this->get('contact.email');
+
+        return is_string($email) && $email !== '' ? $email : null;
     }
 
     public function fallbackYears(): int

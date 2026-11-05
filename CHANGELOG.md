@@ -3,6 +3,29 @@
 Registro dei file creati e modificati per il motore prenotazioni (`App\Engine`).
 Piano di riferimento: `docs/piano_motore_api.md`.
 
+## Fase 6 — Prenotazione (2026-11-05)
+
+### Creati
+- `app/Engine/Application/ReservationService.php`: prenotazione da preventivo dentro `pg_advisory_xact_lock`, con ricalcolo di prezzo e disponibilità; `ReservationInput`, `ReservationNotifier` (email e ricevuta in coda), `PriceChanged`.
+- `app/Engine/Application/Exceptions/`: `QuoteNotUsable` (`quote_expired`, `quote_used`), `QuoteMismatch`, `DatesUnavailable`.
+- `app/Engine/Http/V1/`: `Middleware/EnsureIdempotency`, `Requests/CreateReservationRequest`, `Presenters/ReservationPresenter`, `Controllers/ReservationController` (`POST /reservations`, `GET /reservations/{id}` solo con `sk_` del canale).
+- `app/Engine/Mail/`: `ReservationConfirmed` (cliente), `ReservationReceived` (gestore); viste in `app/Engine/Resources/views/mail`.
+- `app/Engine/Domain/Receipts/ReceiptGenerator.php`, `app/Engine/Infrastructure/Receipts/StubReceiptGenerator.php`, `app/Engine/Jobs/GenerateReceipt.php`, vista `receipts/stub`.
+- `app/Engine/Console/ExpirePendingReservationsCommand.php`: `engine:expire-pending`, pianificato ogni minuto.
+- `database/engine/migrations/2026_11_05_000007_add_discount_snapshot_and_idempotency_headers.php`.
+- `docs/booking.md`.
+- `tests/Engine/Feature/Booking/ReservationsEndpointTest.php`, `tests/Engine/Feature/Booking/ConcurrentReservationsTest.php` (due processi reali, l'ultimo posto va a uno solo; senza lock il test fallisce), `tests/Engine/Unit/Booking/ReservationStatusTest.php`.
+
+### Modificati
+- `app/Engine/Domain/Booking/ReservationStatus.php`: transizioni consentite.
+- `app/Engine/Models/Reservation.php`: `transitionTo()`, `owner()`, snapshot dello sconto; la relazione con il codice si chiama `discountCode()`; il cliente si trova anche se cancellato.
+- `app/Engine/Models/IdempotencyKey.php`: corpo come testo, header salvati.
+- `app/Engine/Settings/EngineSettings.php`: finestra di pagamento online (30 minuti), marchio, telefono ed email del gestore.
+- `app/Engine/Http/V1/Middleware/AuthenticateClient.php`: distingue chiave segreta e pubblicabile.
+- `app/Engine/Http/V1/Problem.php`, `ProblemRenderer.php`: errori 409 con `unavailable_dates` e `quote`.
+- `app/Engine/EngineServiceProvider.php`, `app/Engine/Http/V1/routes.php`, `config/engine.php`, `.env.example`.
+- `tests/Engine/Support/EngineApi.php`: l'orologio fermo vale anche per `now()`.
+
 ## Fase 5 — API di lettura (2026-11-05)
 
 ### Creati

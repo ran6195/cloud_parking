@@ -13,18 +13,19 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $key
  * @property string $request_hash
  * @property int|null $response_status
- * @property array<string, mixed>|null $response_body
+ * @property string|null $response_body corpo JSON originale, come testo
+ * @property array<string, string>|null $response_headers
  * @property CarbonImmutable $expires_at
  */
 class IdempotencyKey extends EngineModel
 {
-    protected $fillable = ['key', 'request_hash', 'response_status', 'response_body', 'expires_at'];
+    protected $fillable = ['key', 'request_hash', 'response_status', 'response_body', 'response_headers', 'expires_at'];
 
     protected function casts(): array
     {
         return [
             'response_status' => 'integer',
-            'response_body' => 'array',
+            'response_headers' => 'array',
             'expires_at' => 'immutable_datetime',
         ];
     }

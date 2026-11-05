@@ -7,6 +7,7 @@ use App\Engine\Domain\Shared\FrozenClock;
 use App\Engine\Models\ApiClient;
 use App\Engine\Models\PriceList;
 use Database\Engine\Seeders\EngineSeeder;
+use Illuminate\Support\Carbon;
 
 /**
  * Supporto per i feature test dell'API: client, orologio fermo, listino di novembre 2026.
@@ -17,9 +18,13 @@ final class EngineApi
 
     public const ORIGIN = 'https://sostablq.example';
 
+    /**
+     * Ferma l'orologio del motore e quello di Laravel (timestamp dei modelli, now()).
+     */
     public static function freezeClock(string $at = self::NOW): void
     {
         app()->instance(Clock::class, FrozenClock::at($at));
+        Carbon::setTestNow(Carbon::parse($at));
     }
 
     /**

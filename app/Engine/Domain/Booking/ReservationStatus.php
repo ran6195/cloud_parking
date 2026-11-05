@@ -6,7 +6,11 @@ use DateTimeImmutable;
 
 /**
  * Stati della prenotazione (vedi ReservationStatus nella spec OpenAPI).
- * Le transizioni consentite arrivano con la fase 6.
+ *
+ *   pending_payment → paid | expired | cancelled
+ *   confirmed       → completed | cancelled
+ *   paid            → completed | cancelled
+ *   completed, cancelled, expired: finali
  */
 enum ReservationStatus: string
 {
@@ -26,6 +30,23 @@ enum ReservationStatus: string
 
     /** Pagamento online non completato in tempo. */
     case Expired = 'expired';
+
+    /**
+     * @return list<self>
+     */
+    public function allowedTransitions(): array
+    {
+        return match ($this) {
+            self::PendingPayment => [self::Paid, self::Expired, self::Cancelled],
+            self::Confirmed, self::Paid => [self::Completed, self::Cancelled],
+            self::Completed, self::Cancelled, self::Expired => [],
+        };
+    }
+
+    public function canTransitionTo(self $next): bool
+    {
+        return in_array($next, $this->allowedTransitions(), true);
+    }
 
     /**
      * Prenotazioni "valide": contano per gli utilizzi dei codici sconto.

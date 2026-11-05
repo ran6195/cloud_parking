@@ -17,7 +17,17 @@ return [
     'rate_limits' => [
         'default' => (int) env('ENGINE_RATE_LIMIT', 120),
         'discounts' => (int) env('ENGINE_RATE_LIMIT_DISCOUNTS', 10),
+        'reservations' => (int) env('ENGINE_RATE_LIMIT_RESERVATIONS', 20),
     ],
+
+    // Durata delle Idempotency-Key.
+    'idempotency_ttl_hours' => 24,
+
+    // Disco delle ricevute: "local" in sviluppo, l'Object Storage su Laravel Cloud.
+    'receipts_disk' => env('ENGINE_RECEIPTS_DISK', 'local'),
+
+    // Pagina dell'interfaccia per annullare, linkata nell'email di conferma. {token} = token di cancellazione.
+    'cancellation_url' => env('ENGINE_CANCELLATION_URL'),
 
     // Base del campo "type" dei problem+json: <base><code>.
     'problem_type_base' => env('ENGINE_PROBLEM_TYPE_BASE', 'https://docs.parcheggio.example/errors/'),

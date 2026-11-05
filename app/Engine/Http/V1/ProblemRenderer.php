@@ -2,9 +2,16 @@
 
 namespace App\Engine\Http\V1;
 
+use App\Engine\Application\Exceptions\DatesUnavailable;
+use App\Engine\Application\Exceptions\QuoteMismatch;
+use App\Engine\Application\Exceptions\QuoteNotUsable;
 use App\Engine\Domain\Pricing\Exceptions\IncompatibleExtras;
 use App\Engine\Domain\Pricing\Exceptions\InvalidStay;
+use App\Engine\Domain\Shared\Clock;
 use App\Engine\Domain\Shared\EngineException;
+use App\Engine\Http\V1\Presenters\QuotePresenter;
+use Carbon\CarbonImmutable;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -25,10 +32,15 @@ final class ProblemRenderer
 
         return match (true) {
             $e instanceof ValidationException => Problem::validation(self::errors($e)),
+            $e instanceof QuoteNotUsable => Problem::response(409, $e->errorCode(), $e->getMessage()),
+            $e instanceof DatesUnavailable => Problem::response(409, $e->errorCode(), $e->getMessage(), ['unavailable_dates' => $e->unavailableDates]),
+            $e instanceof QuoteMismatch => Problem::response(409, $e->errorCode(), $e->getMessage(), [
+                'quote' => QuotePresenter::present($e->newQuote, CarbonImmutable::instance(app(Clock::class)->now())),
+            ]),
             $e instanceof InvalidStay => Problem::validation(['end' => [$e->getMessage()]]),
             $e instanceof IncompatibleExtras => Problem::validation(['extras' => [$e->getMessage()]], $e->errorCode(), $e->getMessage()),
             $e instanceof EngineException => Problem::response(422, $e->errorCode(), $e->getMessage()),
-            $e instanceof NotFoundHttpException => Problem::response(404, 'not_found', 'La risorsa richiesta non esiste.'),
+            $e instanceof NotFoundHttpException, $e instanceof ModelNotFoundException => Problem::response(404, 'not_found', 'La risorsa richiesta non esiste.'),
             default => null,
         };
     }

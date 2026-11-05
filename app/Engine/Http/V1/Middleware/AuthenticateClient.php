@@ -17,6 +17,8 @@ final class AuthenticateClient
 {
     private const ATTRIBUTE = 'engine.api_client';
 
+    private const SECRET_ATTRIBUTE = 'engine.api_client.secret';
+
     public function handle(Request $request, Closure $next): Response
     {
         $key = (string) $request->bearerToken();
@@ -35,8 +37,14 @@ final class AuthenticateClient
         }
 
         $request->attributes->set(self::ATTRIBUTE, $client);
+        $request->attributes->set(self::SECRET_ATTRIBUTE, str_starts_with($key, 'sk_'));
 
         return $next($request);
+    }
+
+    public static function usesSecretKey(Request $request): bool
+    {
+        return $request->attributes->get(self::SECRET_ATTRIBUTE) === true;
     }
 
     public static function client(Request $request): ApiClient
