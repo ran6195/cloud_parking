@@ -16,6 +16,6 @@ e del dump del DB. Tutti vanno risolti nel nuovo motore; ✅ = già risolto in f
 | 9 | 385 prenotazioni scontate senza `discount_id` e alcune con uno sconto non riconducibile alla formula. | ❓ da capire (modifiche manuali dal pannello?) |
 | 10 | Prezzi di gennaio 2027 assenti (`costo` NULL): il legacy ripiega silenziosamente sul 2026. | ✅ il fallback resta, ma viene registrato nel preventivo · ❓ avvisare il gestore dei listini mancanti |
 | 11 | Stati incoerenti: il codice scrive `conclusa`, che non è nell'ENUM originale; 145 prenotazioni con stato NULL; `confermata` solo da giugno 2026. | ❓ significato di `confermata`; mappatura proposta nel piano (sezione 7) |
-| 12 | 55 prenotazioni con quantità di giorni diversa dalla regola, probabilmente date modificate senza ricalcolo. | ✅ la modifica da pannello ricalcolerà il preventivo (fase 9) |
+| 12 | 55 prenotazioni con quantità di giorni diversa dalla regola, probabilmente date modificate senza ricalcolo. | ✅ dal pannello non si possono cambiare date o servizi senza passare dal calcolo (per ora: annulla e ricrea); il cambio con ricalcolo è ancora da fare |
 | 13 | Posto coperto e "Tieni le chiavi" esclusivi solo nella UI. | ✅ vincolo anche lato server |
 | 14 | Errore di battitura nei prezzi: giugno 2025, 21 giorni = 2.190 € (20 gg 180 €, 22 gg 195 €). | ❓ importato così com'è e segnalato dall'import come anomalia; da correggere a mano (190 €?) |

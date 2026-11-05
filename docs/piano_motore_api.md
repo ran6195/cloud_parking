@@ -1,6 +1,6 @@
 # Piano: motore prenotazioni e tariffe API-first
 
-Stato: **in corso**, fasi 0–8 completate (PayPal con gateway simulato) (aggiornato il 2026-11-05). Riferimento regole di calcolo: `docs/prompt_rebuild_motore_prenotazioni.md`.
+Stato: **in corso**, fasi 0–9 completate (PayPal con gateway simulato) (aggiornato il 2026-11-05). Riferimento regole di calcolo: `docs/prompt_rebuild_motore_prenotazioni.md`.
 
 ## 1. Principi
 
@@ -144,6 +144,7 @@ Aggiornate il 2026-10-31 con l'analisi del dump legacy (21.800 prenotazioni). �
 14. ✅ **Creazione prenotazioni** (2026-11-05): lock globale `pg_advisory_xact_lock`, ricalcolo di prezzo e disponibilità, cliente unico per email con i contatti aggiornati all'ultima prenotazione, `email_sent` = email messe in coda. Dettagli in `docs/booking.md`.
 15. ✅ **Pagamenti** (2026-11-05): l'ordine lo crea il server; l'incasso è verificato per stato, valuta e importo; un pagamento in ritardo si accetta solo se il posto è ancora libero; i webhook fanno da rete di sicurezza. In sviluppo il gateway è simulato (`ENGINE_PAYMENTS_DRIVER=fake`). Dettagli in `docs/payments.md`.
 16. ✅ **Cancellazioni** (2026-11-05): fino a 24 ore prima della consegna per tutti i metodi di pagamento; rimborso **manuale** come predefinito, **automatico** su PayPal come opzione (`refunds.mode`). Dettagli in `docs/cancellations.md`.
+17. ✅ **Pannello** (2026-11-05): `/motore` con utenti propri; il gestore può annullare anche oltre la finestra del cliente. Non ancora disponibili il cambio di date o servizi e la prenotazione da sportello. Dettagli in `docs/panel.md`.
 
 ## 8. Cosa serve dal gestore
 

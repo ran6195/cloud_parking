@@ -5,6 +5,7 @@ namespace App\Engine\Application;
 use App\Engine\Application\Exceptions\CancellationNotAllowed;
 use App\Engine\Domain\Booking\CancellationDecision;
 use App\Engine\Domain\Booking\CancellationPolicy;
+use App\Engine\Domain\Booking\CancellationReason;
 use App\Engine\Domain\Booking\ReservationStatus;
 use App\Engine\Domain\Pricing\PaymentMethod;
 use App\Engine\Domain\Shared\Clock;
@@ -78,6 +79,42 @@ final readonly class CancellationService
         }
 
         return ['reservation' => $reservation->refresh(), 'email_sent' => $this->notifier->cancelled($reservation)];
+    }
+
+    /**
+     * Cancellazione dal pannello: nessuna finestra di tempo, solo gli stati annullabili.
+     * Se era pagata online il rimborso viene registrato (ed eseguito, con i rimborsi automatici).
+     *
+     * @return array{reservation: Reservation, email_sent: bool}
+     */
+    public function cancelByManager(Reservation $reservation, ?string $reason, bool $notifyCustomer = true): array
+    {
+        $reservation = DB::connection(EngineServiceProvider::CONNECTION)->transaction(function () use ($reservation, $reason): Reservation {
+            $reservation = Reservation::query()->whereKey($reservation->id)->lockForUpdate()->firstOrFail();
+            $decision = $this->decide($reservation);
+
+            if ($decision->reason !== null && $decision->reason !== CancellationReason::WindowClosed) {
+                throw CancellationNotAllowed::because($decision->reason, $decision->deadline);
+            }
+
+            if ($decision->refundRequired) {
+                $this->refunds->request($reservation, null, 'Annullata dal gestore.');
+            }
+
+            $reservation->cancelled_at = CarbonImmutable::instance($this->clock->now());
+            $reservation->cancellation_reason = $reason;
+            $reservation->transitionTo(ReservationStatus::Cancelled);
+
+            return $reservation;
+        });
+
+        if (RefundService::status($reservation) === RefundService::REQUESTED && $this->settings->automaticRefunds()) {
+            $this->refunds->refundAutomatically($reservation);
+        }
+
+        $reservation->refresh();
+
+        return ['reservation' => $reservation, 'email_sent' => $notifyCustomer && $this->notifier->cancelled($reservation)];
     }
 
     private static function paidOnline(Reservation $reservation): bool

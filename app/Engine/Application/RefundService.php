@@ -31,9 +31,9 @@ final readonly class RefundService
     public function __construct(private PaymentGateway $gateway, private Clock $clock) {}
 
     /**
-     * Prima registrazione, al momento della cancellazione.
+     * Prima registrazione, al momento della cancellazione. Senza codice fiscale se annulla il gestore.
      */
-    public function request(Reservation $reservation, string $taxCode, ?string $notes): void
+    public function request(Reservation $reservation, ?string $taxCode, ?string $notes): void
     {
         $reservation->refund = [
             'status' => self::REQUESTED,

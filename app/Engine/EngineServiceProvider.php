@@ -2,6 +2,7 @@
 
 namespace App\Engine;
 
+use App\Engine\Console\CreateAdminCommand;
 use App\Engine\Console\CreateApiClientCommand;
 use App\Engine\Console\EngineMigrateCommand;
 use App\Engine\Console\ExpirePendingReservationsCommand;
@@ -18,6 +19,7 @@ use App\Engine\Domain\Pricing\TariffSource;
 use App\Engine\Domain\Receipts\ReceiptGenerator;
 use App\Engine\Domain\Shared\Clock;
 use App\Engine\Domain\Shared\SystemClock;
+use App\Engine\Filament\EnginePanelProvider;
 use App\Engine\Http\V1\Middleware\EngineCors;
 use App\Engine\Http\V1\ProblemRenderer;
 use App\Engine\Infrastructure\Availability\DatabaseAvailabilityData;
@@ -26,6 +28,7 @@ use App\Engine\Infrastructure\Payments\PayPalGateway;
 use App\Engine\Infrastructure\Pricing\DatabaseDiscountFinder;
 use App\Engine\Infrastructure\Pricing\DatabaseTariffSource;
 use App\Engine\Infrastructure\Receipts\StubReceiptGenerator;
+use App\Engine\Models\Admin;
 use App\Engine\Settings\EngineSettings;
 use DateTimeZone;
 use Illuminate\Console\Scheduling\Schedule;
@@ -51,6 +54,13 @@ class EngineServiceProvider extends ServiceProvider
 
     public function register(): void
     {
+        // Utenti del pannello Motore: guard e provider propri, separati da quelli del CMS.
+        config([
+            'auth.guards.'.EnginePanelProvider::GUARD => ['driver' => 'session', 'provider' => 'engine_admins'],
+            'auth.providers.engine_admins' => ['driver' => 'eloquent', 'model' => Admin::class],
+        ]);
+        $this->app->register(EnginePanelProvider::class);
+
         $this->app->bind(Clock::class, fn () => new SystemClock(new DateTimeZone(self::TIMEZONE)));
         $this->app->scoped(EngineSettings::class);
         $this->app->bind(DiscountFinder::class, DatabaseDiscountFinder::class);
@@ -116,6 +126,7 @@ class EngineServiceProvider extends ServiceProvider
                 CreateApiClientCommand::class,
                 ExpirePendingReservationsCommand::class,
                 RefundsCommand::class,
+                CreateAdminCommand::class,
             ]);
         }
 

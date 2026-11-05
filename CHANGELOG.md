@@ -3,6 +3,26 @@
 Registro dei file creati e modificati per il motore prenotazioni (`App\Engine`).
 Piano di riferimento: `docs/piano_motore_api.md`.
 
+## Fase 9 — Pannello del gestore (2026-11-05)
+
+### Creati
+- `app/Engine/Filament/EnginePanelProvider.php`: pannello `/motore` con guard `engine` e utenti `engine.admins`.
+- `app/Engine/Filament/Resources/`: `Reservations` (elenco, dettaglio con azioni del gestore, modifica dei dati non legati al prezzo), `Customers`, `PriceLists` (editor dei 30 prezzi, duplicazione con variazione %, controllo delle sovrapposizioni), `Discounts`, `BlockedDates` (giorno o periodo), `ApiClients` (creazione con le chiavi, revoca).
+- `app/Engine/Filament/Pages/`: `EngineSettingsPage` (impostazioni del gestore), `QuoteSimulator`.
+- `app/Engine/Filament/Widgets/`: `EngineStatsWidget`, `OccupancyWidget` (14 giorni).
+- `app/Engine/Filament/Support/`: `Euro`, `Labels`.
+- Viste `app/Engine/Resources/views/filament/` (`occupancy`, `quote-result`).
+- `app/Engine/Console/CreateAdminCommand.php`: `engine:admin`.
+- `docs/panel.md`.
+- `tests/Engine/Feature/Panel/EnginePanelTest.php`.
+
+### Modificati
+- `app/Engine/EngineServiceProvider.php`: guard e provider di autenticazione `engine`, registrazione del pannello, comando `engine:admin`.
+- `app/Engine/Models/Admin.php`: accesso al solo pannello `motore`.
+- `app/Engine/Application/CancellationService.php`: `cancelByManager()` senza finestra di tempo; `RefundService::request()` accetta un codice fiscale assente.
+- Vista `mail/reservation-cancelled-notice`: codice fiscale "non indicato" se manca.
+- `docs/piano_motore_api.md`, `docs/legacy_problemi_prezzi.md`.
+
 ## Fase 8 — Cancellazioni e rimborsi (2026-11-05)
 
 ### Creati

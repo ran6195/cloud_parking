@@ -3,7 +3,10 @@
 namespace App\Engine\Models;
 
 use App\Engine\EngineServiceProvider;
+use App\Engine\Filament\EnginePanelProvider;
 use Database\Engine\Factories\AdminFactory;
+use Filament\Models\Contracts\FilamentUser;
+use Filament\Panel;
 use Illuminate\Database\Eloquent\Attributes\UseFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -17,7 +20,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
  * @property string $password
  */
 #[UseFactory(AdminFactory::class)]
-class Admin extends Authenticatable
+class Admin extends Authenticatable implements FilamentUser
 {
     /** @use HasFactory<AdminFactory> */
     use HasFactory;
@@ -32,5 +35,10 @@ class Admin extends Authenticatable
     protected function casts(): array
     {
         return ['password' => 'hashed'];
+    }
+
+    public function canAccessPanel(Panel $panel): bool
+    {
+        return $panel->getId() === EnginePanelProvider::ID;
     }
 }

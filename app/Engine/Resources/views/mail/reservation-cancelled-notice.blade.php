@@ -15,7 +15,7 @@
 ## Rimborso: {{ number_format($refund['amount_cents'] / 100, 2, ',', '.') }} €
 
 - **Stato:** {{ ['requested' => 'da fare a mano', 'refunded' => 'eseguito su PayPal', 'failed' => 'automatico non riuscito, da fare a mano'][$refund['status']] ?? $refund['status'] }}
-- **Codice fiscale di chi ha pagato:** {{ $refund['tax_code'] }}
+- **Codice fiscale di chi ha pagato:** {{ $refund['tax_code'] ?? 'non indicato' }}
 @if (! empty($refund['notes']))
 - **Note del cliente:** {{ $refund['notes'] }}
 @endif
