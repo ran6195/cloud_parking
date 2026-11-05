@@ -1,6 +1,6 @@
 # Piano: motore prenotazioni e tariffe API-first
 
-Stato: **in corso**, fasi 0–4 completate (aggiornato il 2026-11-05). Riferimento regole di calcolo: `docs/prompt_rebuild_motore_prenotazioni.md`.
+Stato: **in corso**, fasi 0–5 completate (aggiornato il 2026-11-05). Riferimento regole di calcolo: `docs/prompt_rebuild_motore_prenotazioni.md`.
 
 ## 1. Principi
 
@@ -128,7 +128,7 @@ Note sulla fase 10:
 
 Aggiornate il 2026-10-31 con l'analisi del dump legacy (21.800 prenotazioni). ✅ = chiarita dai dati o già implementata, ❓ = da confermare.
 
-1. ❓ **Totale dal client**: il server ricalcola sempre. Il client invia solo il `quote_id`. Se il preventivo è scaduto o il prezzo è cambiato, la risposta è 409 `quote_expired` o `quote_mismatch` con il nuovo preventivo.
+1. ✅ **Totale dal client**: il server ricalcola sempre. Il client invia solo il `quote_id`. Se il preventivo è scaduto o il prezzo è cambiato, la risposta è 409 `quote_expired` o `quote_mismatch` con il nuovo preventivo.
 2. ✅ **Sconti**: il totale resta tra 0 e T, e lo 0 è ammesso. Lo sconto si applica anche alla commissione di pagamento, come nel legacy (verificato su 1.443 prenotazioni scontate).
 3. ✅ **`quantita_massima`**: nel legacy non è mai stata applicata. Il codice attivo al 10% ha 228 utilizzi su un massimo di 100, e 0 è usato come "illimitato". Nel motore diventa `max_uses`, con `null` = illimitato. In importazione (fase 11) lo 0 diventa `null`; i codici già oltre il limite si importano con `max_uses = null`, per non disattivarli di colpo, e finiscono nel report (proposta accettata il 2026-11-05).
 4. ✅ **Stati**: nei dati ci sono `conclusa` (12.970), `iniziata` (5.774), `da_pagare` (3.003), `confermata` (165), `pagata` (1) e `NULL` (145). Mappatura proposta (❓ `confermata`): `iniziata` → `pending_payment`, `da_pagare` e `confermata` → `confirmed`, `conclusa` e `pagata` → `paid`; i `NULL` vanno nel report degli scarti.
@@ -139,6 +139,8 @@ Aggiornate il 2026-10-31 con l'analisi del dump legacy (21.800 prenotazioni). �
 9. ✅ **Prenotazioni in attesa di pagamento**: occupano il posto fino a `payment_due_by` (obbligatorio), poi non più. Il job che le porta a `expired` arriva in fase 6 (2026-11-05).
 10. ✅ **Durata e ora legale**: il legacy usa minuti reali in `Europe/Rome`; nei dati non c'è nessun caso in cui l'ora legale cambi il risultato. Il motore conta sull'orologio.
 11. ❓ **CMS locale su SQLite**: resta così, oppure si passa anche il CMS al Postgres locale.
+12. ✅ **Validità del preventivo**: 30 minuti, come il termine per il pagamento online (2026-11-05). Configurabile con `ENGINE_QUOTE_TTL_MINUTES`.
+13. ✅ **Impostazioni**: tabella `engine.settings` letta da `EngineSettings`; i predefiniti sono i valori del legacy al 31/10/2026 (285 posti, blocco automatico, 3 posti coperti, 3 Tieni le chiavi a 7 €, lavaggi e servizi informativi spenti).
 
 ## 8. Cosa serve dal gestore
 

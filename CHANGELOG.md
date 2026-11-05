@@ -3,6 +3,33 @@
 Registro dei file creati e modificati per il motore prenotazioni (`App\Engine`).
 Piano di riferimento: `docs/piano_motore_api.md`.
 
+## Fase 5 — API di lettura (2026-11-05)
+
+### Creati
+- `config/engine.php`: validità dei preventivi (30 minuti), tolleranza sulla consegna (15 minuti), limiti di richieste, base dei problem+json.
+- `app/Engine/Settings/EngineSettings.php`: impostazioni del gestore tipizzate e in cache, con i valori del legacy come predefiniti; costruisce catalogo dei servizi, capacità e commissioni.
+- `app/Engine/Application/`: `QuoteService` (calcolo, disponibilità, salvataggio con scadenza) e `QuoteSnapshot`.
+- `app/Engine/Http/V1/`:
+  - `Problem`, `ProblemRenderer` (errori RFC 9457 con `code` stabile);
+  - `Middleware/AuthenticateClient` (chiavi `pk_` con controllo dell'origine, `sk_`), `Middleware/RateLimitClient` (header `RateLimit-*`, 429), `Middleware/EngineCors` (origini registrate dai client);
+  - `Rules/DateTimeWithOffset`, `Requests/` (`StayRequest`, `CheckAvailabilityRequest`, `CreateQuoteRequest`, `CheckDiscountRequest`);
+  - `Presenters/` (`MoneyJson`, `ExtraPresenter`, `QuotePresenter`);
+  - `Controllers/` (`ExtrasController`, `TariffSummaryController`, `AvailabilityController`, `DiscountCheckController`, `QuoteController`).
+- `app/Engine/Console/CreateApiClientCommand.php`: `php artisan engine:client "Nome" canale --origin=https://…`.
+- `database/engine/migrations/2026_11_05_000006_add_snapshot_columns_to_quotes.php`: durata, disponibilità, `bookable` e termine di cancellazione salvati nel preventivo.
+- `config/cors.php`: pubblicato con `paths` vuoto, perché il CORS di `/api/v1` lo gestisce il motore.
+- `tests/Engine/Support/EngineApi.php`; `tests/Engine/Feature/Api/` (accesso, catalogo, disponibilità, sconti, preventivi, tutte le risposte validate contro `openapi/v1.yaml`); `tests/Engine/Feature/Settings/EngineSettingsTest.php`.
+
+### Modificati
+- `app/Engine/EngineServiceProvider.php`: collegamenti nel container (orologio, impostazioni, listini, sconti, disponibilità, calcolatore), CORS globale, rendering dei problem+json, comando `engine:client`.
+- `app/Engine/Http/V1/routes.php`: `extras`, `tariffs/summary`, `availability`, `quotes`, `quotes/{quoteId}`, `discounts/check`.
+- `app/Engine/Models/ApiClient.php`: `issue()`, `findByKey()`, origini consentite in cache.
+- `app/Engine/Models/Setting.php`: svuota la cache delle impostazioni a ogni modifica.
+- `app/Engine/Models/Quote.php`, `database/engine/factories/QuoteFactory.php`: nuove colonne.
+- `routes/web.php` (CMS): la rotta delle pagine non intercetta più i percorsi `api/…`.
+- `.env.example`: variabili `ENGINE_*` del motore.
+- `docs/piano_motore_api.md`: stato e decisioni.
+
 ## Fase 4 — Disponibilità (2026-11-05)
 
 ### Creati

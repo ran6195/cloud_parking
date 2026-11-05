@@ -14,5 +14,6 @@ Route::get('/robots.txt', [RobotsController::class, 'index'])->name('robots');
 Route::post('/contatti', [LeadController::class, 'store'])->name('leads.store');
 
 Route::get('/{slug}', [PageController::class, 'show'])
-    ->where('slug', '[a-z0-9\-\/]+')
+    // api/ è riservato al motore prenotazioni (/api/v1): le pagine CMS non lo intercettano
+    ->where('slug', '(?!api/)[a-z0-9\-\/]+')
     ->name('page.show');

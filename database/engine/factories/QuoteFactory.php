@@ -32,6 +32,17 @@ class QuoteFactory extends Factory
             'total_cents' => 2500,
             'discount' => null,
             'trace' => ['price_table' => 'Novembre 2026', 'fallback_years' => 0],
+            'stay' => [
+                'start' => '2026-11-20T08:00:00+01:00', 'end' => '2026-11-23T08:00:00+01:00',
+                'duration_minutes' => 4320, 'billable_days' => 3, 'days_after_30' => 0,
+            ],
+            'availability' => [
+                'available' => true,
+                'parking' => ['available' => true, 'reason' => null, 'unavailable_dates' => []],
+                'extras' => [],
+            ],
+            'bookable' => true,
+            'cancellation_free_until' => CarbonImmutable::parse('2026-11-19 08:00', 'Europe/Rome'),
             'expires_at' => CarbonImmutable::now()->addMinutes(30),
         ];
     }

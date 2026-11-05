@@ -27,6 +27,10 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property int $total_cents
  * @property array<string, mixed>|null $discount
  * @property array<string, mixed> $trace
+ * @property array{start: string, end: string, duration_minutes: int, billable_days: int, days_after_30: int} $stay
+ * @property array<string, mixed> $availability
+ * @property bool $bookable
+ * @property CarbonImmutable $cancellation_free_until
  * @property CarbonImmutable $expires_at
  * @property CarbonImmutable|null $used_at
  */
@@ -41,7 +45,7 @@ class Quote extends EngineModel
     protected $fillable = [
         'api_client_id', 'discount_id', 'starts_at', 'ends_at', 'extras', 'payment_method',
         'lines', 'subtotal_cents', 'discount_cents', 'total_cents', 'discount', 'trace',
-        'expires_at', 'used_at',
+        'stay', 'availability', 'bookable', 'cancellation_free_until', 'expires_at', 'used_at',
     ];
 
     protected function casts(): array
@@ -57,6 +61,10 @@ class Quote extends EngineModel
             'total_cents' => 'integer',
             'discount' => 'array',
             'trace' => 'array',
+            'stay' => 'array',
+            'availability' => 'array',
+            'bookable' => 'boolean',
+            'cancellation_free_until' => 'immutable_datetime',
             'expires_at' => 'immutable_datetime',
             'used_at' => 'immutable_datetime',
         ];
