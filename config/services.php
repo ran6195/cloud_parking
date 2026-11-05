@@ -35,4 +35,19 @@ return [
         ],
     ],
 
+    /*
+     * Motore prenotazioni, usato dal CMS via HTTP come qualsiasi altra interfaccia.
+     * La chiave è una sk_ creata con "php artisan engine:client" (o dal pannello /motore).
+     * Senza URL si usa questa stessa applicazione: APP_URL/api/v1.
+     */
+    'engine' => [
+        'url' => env('ENGINE_API_URL'),
+        'key' => env('ENGINE_API_KEY'),
+        'timeout' => (int) env('ENGINE_API_TIMEOUT', 10),
+        // Pulsanti PayPal veri nel form (servono PAYPAL_CLIENT_ID e il motore con PayPal vero);
+        // altrimenti il form mostra un pagamento simulato.
+        'paypal_buttons' => (bool) env('ENGINE_FORM_PAYPAL_BUTTONS', false),
+        'paypal_client_id' => env('PAYPAL_CLIENT_ID'),
+    ],
+
 ];

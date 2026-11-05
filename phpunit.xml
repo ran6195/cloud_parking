@@ -39,6 +39,9 @@
         <env name="ENGINE_DB_USERNAME" value="parking"/>
         <env name="ENGINE_DB_PASSWORD" value="parking"/>
         <env name="ENGINE_DB_SCHEMA" value="engine"/>
+        <!-- Il CMS non chiama mai un motore vero nei test: le risposte si simulano con Http::fake -->
+        <env name="ENGINE_API_URL" value=""/>
+        <env name="ENGINE_API_KEY" value=""/>
         <env name="MAIL_MAILER" value="array"/>
         <env name="QUEUE_CONNECTION" value="sync"/>
         <env name="SESSION_DRIVER" value="array"/>

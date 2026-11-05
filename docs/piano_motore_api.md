@@ -1,6 +1,6 @@
 # Piano: motore prenotazioni e tariffe API-first
 
-Stato: **in corso**, fasi 0–9 completate (PayPal con gateway simulato) (aggiornato il 2026-11-05). Riferimento regole di calcolo: `docs/prompt_rebuild_motore_prenotazioni.md`.
+Stato: **in corso**, fasi 0–10 completate (PayPal con gateway simulato) (aggiornato il 2026-11-05). Riferimento regole di calcolo: `docs/prompt_rebuild_motore_prenotazioni.md`.
 
 ## 1. Principi
 
@@ -122,7 +122,7 @@ Ogni fase si chiude con test Pest verdi, Pint e Larastan puliti, e l'aggiornamen
 Note sulla fase 10:
 - Nel CMS spariscono `App\Services\PriceCalculator`, i campi `price_*` di `ParkingSettings` e il `booking_url`.
 - Il blocco pricing legge `/api/v1/tariffs/summary`, con la risposta in cache.
-- **Chiamate dell'app verso sé stessa in locale**: `php artisan serve` è a processo singolo, quindi una richiesta del form verso `/api/v1` resterebbe bloccata in attesa. Serve `PHP_CLI_SERVER_WORKERS=4`, oppure Herd o Valet. Su Cloud non c'è questo problema.
+- **Chiamate dell'app verso sé stessa in locale**: `php artisan serve` è a processo singolo, quindi una richiesta del form verso `/api/v1` resterebbe bloccata in attesa. Serve `PHP_CLI_SERVER_WORKERS=4 php artisan serve --no-reload` (senza `--no-reload` la variabile viene ignorata), oppure Herd o Valet. Su Cloud non c'è questo problema.
 
 ## 7. Decisioni
 
@@ -145,6 +145,7 @@ Aggiornate il 2026-10-31 con l'analisi del dump legacy (21.800 prenotazioni). �
 15. ✅ **Pagamenti** (2026-11-05): l'ordine lo crea il server; l'incasso è verificato per stato, valuta e importo; un pagamento in ritardo si accetta solo se il posto è ancora libero; i webhook fanno da rete di sicurezza. In sviluppo il gateway è simulato (`ENGINE_PAYMENTS_DRIVER=fake`). Dettagli in `docs/payments.md`.
 16. ✅ **Cancellazioni** (2026-11-05): fino a 24 ore prima della consegna per tutti i metodi di pagamento; rimborso **manuale** come predefinito, **automatico** su PayPal come opzione (`refunds.mode`). Dettagli in `docs/cancellations.md`.
 17. ✅ **Pannello** (2026-11-05): `/motore` con utenti propri; il gestore può annullare anche oltre la finestra del cliente. Non ancora disponibili il cambio di date o servizi e la prenotazione da sportello. Dettagli in `docs/panel.md`.
+18. ✅ **Form del CMS** (2026-11-05): chiama l'API dal server con una chiave `sk_` (Livewire); prezzi e `booking_url` tolti dalle impostazioni del CMS; se il motore non risponde, il form propone la telefonata. **Su Cloud va pubblicato insieme alla fase 12**, altrimenti la landing in produzione resta senza prezzi. Dettagli in `docs/cms_form.md`.
 
 ## 8. Cosa serve dal gestore
 

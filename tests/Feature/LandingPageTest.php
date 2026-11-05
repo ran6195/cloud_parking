@@ -5,10 +5,13 @@ namespace Tests\Feature;
 use App\Settings\GeneralSettings;
 use Database\Seeders\LandingPageSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Http;
+use Tests\Concerns\FakesEngineApi;
 use Tests\TestCase;
 
 class LandingPageTest extends TestCase
 {
+    use FakesEngineApi;
     use RefreshDatabase;
 
     protected function setUp(): void
@@ -62,12 +65,40 @@ class LandingPageTest extends TestCase
             ->assertDontSee('{telefono}');
     }
 
-    public function test_pricing_table_reads_tariffs_from_settings(): void
+    public function test_pricing_table_reads_tariffs_from_the_engine(): void
     {
+        $this->configureEngine();
+        Http::fake([
+            self::ENGINE.'/tariffs/summary' => Http::response([
+                'price_list' => ['valid_from' => '2026-11-01', 'valid_to' => '2026-11-30'],
+                'prices' => [
+                    ['days' => 1, 'price' => ['amount_cents' => 1700, 'currency' => 'EUR']],
+                    ['days' => 3, 'price' => ['amount_cents' => 2700, 'currency' => 'EUR']],
+                    ['days' => 7, 'price' => ['amount_cents' => 4700, 'currency' => 'EUR']],
+                    ['days' => 14, 'price' => ['amount_cents' => 8550, 'currency' => 'EUR']],
+                ],
+                'price_per_day_after_30' => ['amount_cents' => 1000, 'currency' => 'EUR'],
+                'covered_parking_percentage' => 40,
+            ]),
+            self::ENGINE.'/extras' => Http::response($this->engineExtras()),
+        ]);
+
         $this->get('/')
-            ->assertSee('Fino a 3 giorni')
-            ->assertSee('€ 25')
-            ->assertSee('Posto coperto');
+            ->assertSee('3 giorni')
+            ->assertSee('€ 27')
+            ->assertSee('€ 85,50')
+            ->assertSee('Ogni giorno oltre il 30°')
+            ->assertSee('+ 40%');
+    }
+
+    public function test_pricing_table_falls_back_to_the_form_when_the_engine_is_down(): void
+    {
+        config(['services.engine.key' => null]);
+
+        $this->get('/')
+            ->assertOk()
+            ->assertSee('Il prezzo dipende dalle date')
+            ->assertSee('Calcola il prezzo');
     }
 
     public function test_legal_placeholder_pages_exist(): void

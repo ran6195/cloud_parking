@@ -1,15 +1,24 @@
 @php
+    use App\Services\Engine\EngineClient;
     use App\Support\SiteText;
 
-    $parking = app(\App\Settings\ParkingSettings::class);
-    $rows = [
-        ['Fino a 3 giorni', SiteText::euro($parking->price_up_to_3_days), null],
-        ['Una settimana', SiteText::euro($parking->price_week), null],
-        ['Due settimane', SiteText::euro($parking->price_two_weeks), null],
-        ['Ogni giorno in più', '+ '.SiteText::euro($parking->price_extra_day), 'al giorno'],
-    ];
-    if ($parking->price_covered_per_day !== null) {
-        $rows[] = ['Posto coperto', '+ '.SiteText::euro($parking->price_covered_per_day), 'al giorno'];
+    // Prezzi "a partire da" del motore: lo stesso listino dei preventivi.
+    try {
+        $summary = app(EngineClient::class)->tariffSummary();
+    } catch (\App\Services\Engine\EngineUnavailable|\App\Services\Engine\EngineApiError) {
+        $summary = null;
+    }
+
+    $labels = [1 => '1 giorno', 3 => '3 giorni', 7 => 'Una settimana', 14 => 'Due settimane'];
+    $rows = [];
+    foreach ($summary['prices'] ?? [] as $price) {
+        $rows[] = [$labels[$price['days']] ?? $price['days'].' giorni', SiteText::euro($price['price']['amount_cents'] / 100), null];
+    }
+    if ($summary) {
+        $rows[] = ['Ogni giorno oltre il 30°', '+ '.SiteText::euro($summary['price_per_day_after_30']['amount_cents'] / 100), 'al giorno'];
+        if (($summary['covered_parking_percentage'] ?? 0) > 0) {
+            $rows[] = ['Posto coperto', '+ '.$summary['covered_parking_percentage'].'%', 'sul prezzo del parcheggio'];
+        }
     }
 @endphp
 <x-section :data="$data" default-background="carta" default-anchor="tariffe">
@@ -28,25 +37,30 @@
         </div>
 
         <div class="rounded-card border border-bordo p-6 sm:p-8">
-            <table class="w-full">
-                <caption class="pb-4 text-left font-bold text-testo-soft">{{ $data['table_caption'] ?? 'Posto scoperto, navetta inclusa' }}</caption>
-                <thead class="sr-only">
-                    <tr><th scope="col">Durata</th><th scope="col">Prezzo</th></tr>
-                </thead>
-                <tbody class="divide-y divide-bordo border-t border-bordo">
-                    @foreach($rows as [$label, $price, $unit])
-                        <tr>
-                            <th scope="row" class="py-4 pr-4 text-left text-lg font-normal">{{ $label }}</th>
-                            <td class="py-4 text-right whitespace-nowrap">
-                                <span class="font-display text-2xl font-bold tracking-[-0.5px]">{{ $price }}</span>
-                                @if($unit)
-                                    <span class="block text-sm text-testo-soft">{{ $unit }}</span>
-                                @endif
-                            </td>
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
+            @if($rows)
+                <table class="w-full">
+                    <caption class="pb-4 text-left font-bold text-testo-soft">{{ $data['table_caption'] ?? 'Posto scoperto, navetta inclusa' }}</caption>
+                    <thead class="sr-only">
+                        <tr><th scope="col">Durata</th><th scope="col">Prezzo</th></tr>
+                    </thead>
+                    <tbody class="divide-y divide-bordo border-t border-bordo">
+                        @foreach($rows as [$label, $price, $unit])
+                            <tr>
+                                <th scope="row" class="py-4 pr-4 text-left text-lg font-normal">{{ $label }}</th>
+                                <td class="py-4 text-right whitespace-nowrap">
+                                    <span class="font-display text-2xl font-bold tracking-[-0.5px]">{{ $price }}</span>
+                                    @if($unit)
+                                        <span class="block text-sm text-testo-soft">{{ $unit }}</span>
+                                    @endif
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+                <p class="mt-4 text-sm text-testo-soft">Prezzi del listino in corso. Il prezzo esatto lo vedi inserendo le date.</p>
+            @else
+                <p class="text-lg">Il prezzo dipende dalle date: inseriscile nel modulo e lo vedi subito.</p>
+            @endif
         </div>
     </div>
 </x-section>

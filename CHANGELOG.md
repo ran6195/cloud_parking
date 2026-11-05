@@ -3,6 +3,26 @@
 Registro dei file creati e modificati per il motore prenotazioni (`App\Engine`).
 Piano di riferimento: `docs/piano_motore_api.md`.
 
+## Fase 10 — Form di prenotazione del CMS sull'API (2026-11-05)
+
+### Creati
+- `app/Services/Engine/EngineClient.php`, `EngineApiError.php`, `EngineUnavailable.php`: client HTTP del CMS verso `/api/v1` con chiave `sk_`, servizi e tariffe in cache.
+- `database/settings/2026_11_05_120000_remove_pricing_from_parking_settings.php`: toglie prezzi e `booking_url` dalle impostazioni del CMS.
+- `tests/Concerns/FakesEngineApi.php`: risposte del motore simulate per i test del CMS.
+- `docs/cms_form.md`.
+
+### Modificati
+- `app/Livewire/BookingForm.php` e `resources/views/livewire/booking-form.blade.php`: date e servizi → preventivo → dati → prenotazione → pagamento (simulato o pulsanti PayPal); gestione di errori per campo, prezzo cambiato, preventivo scaduto, date occupate, motore non raggiungibile.
+- `resources/views/blocks/pricing.blade.php`: prezzi da `/tariffs/summary`, con un'alternativa se il motore non risponde.
+- `app/Settings/ParkingSettings.php`, `app/Filament/Pages/ManageParkingSettings.php` (ora "Parcheggio"): senza prezzi né `booking_url`.
+- `app/Providers/AppServiceProvider.php`: `EngineClient` nel container.
+- `config/services.php`: sezione `engine`; `.env.example`: `ENGINE_API_*`, `ENGINE_FORM_PAYPAL_BUTTONS`.
+- `phpunit.xml`: `ENGINE_API_URL` e `ENGINE_API_KEY` vuoti, così i test del CMS non chiamano mai un motore vero.
+- `tests/Feature/BookingFormTest.php` (riscritto), `tests/Feature/LandingPageTest.php`.
+
+### Rimossi
+- `app/Services/PriceCalculator.php`, `tests/Unit/PriceCalculatorTest.php`.
+
 ## Fase 9 — Pannello del gestore (2026-11-05)
 
 ### Creati

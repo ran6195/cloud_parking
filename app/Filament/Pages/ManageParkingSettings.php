@@ -14,9 +14,9 @@ class ManageParkingSettings extends SettingsPage
 {
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedTruck;
 
-    protected static ?string $navigationLabel = 'Parcheggio e tariffe';
+    protected static ?string $navigationLabel = 'Parcheggio';
 
-    protected static ?string $title = 'Parcheggio e tariffe';
+    protected static ?string $title = 'Parcheggio';
 
     protected static string $settings = ParkingSettings::class;
 
@@ -38,27 +38,12 @@ class ManageParkingSettings extends SettingsPage
                             ->numeric()
                             ->minValue(0)
                             ->required(),
-                        TextInput::make('booking_url')
-                            ->label('URL del sistema di prenotazione')
-                            ->helperText('Il modulo aggiunge le date in query string: partenza, rientro, persone.')
-                            ->url()
-                            ->columnSpanFull(),
                     ])
                     ->columns(2),
 
-                Section::make('Tariffe (posto scoperto, navetta inclusa)')
-                    ->schema([
-                        TextInput::make('price_up_to_3_days')->label('Fino a 3 giorni')->numeric()->prefix('€')->required(),
-                        TextInput::make('price_week')->label('Una settimana')->numeric()->prefix('€')->required(),
-                        TextInput::make('price_two_weeks')->label('Due settimane')->numeric()->prefix('€')->required(),
-                        TextInput::make('price_extra_day')->label('Ogni giorno in più (oltre le due settimane)')->numeric()->prefix('€')->required(),
-                        TextInput::make('price_covered_per_day')
-                            ->label('Supplemento posto coperto, al giorno')
-                            ->helperText('Lasciare vuoto se non disponibile.')
-                            ->numeric()
-                            ->prefix('€'),
-                    ])
-                    ->columns(2),
+                Section::make('Prezzi e prenotazioni')
+                    ->description('Listini, servizi e prenotazioni si gestiscono nel pannello del motore: /motore. Il sito li legge da lì.')
+                    ->schema([]),
 
                 Section::make('Mappa e recensioni')
                     ->schema([
