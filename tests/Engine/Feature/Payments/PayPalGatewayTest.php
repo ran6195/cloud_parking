@@ -95,3 +95,20 @@ it('rifiuta i webhook se manca il Webhook ID', function () {
 
     expect($gateway->verifyWebhook([], '{}'))->toBeFalse();
 });
+
+it('rimborsa un incasso e distingue il rifiuto da un guasto', function () {
+    fakePayPal([
+        SANDBOX.'/v2/payments/captures/CAP1/refund' => Http::response(['id' => 'REF1', 'status' => 'COMPLETED'], 201),
+        SANDBOX.'/v2/payments/captures/CAP2/refund' => Http::response(['name' => 'UNPROCESSABLE_ENTITY', 'details' => [['issue' => 'CAPTURE_FULLY_REFUNDED']]], 422),
+        SANDBOX.'/v2/payments/captures/CAP3/refund' => Http::response([], 503),
+    ]);
+
+    $refund = $this->gateway->refundCapture('CAP1', Money::cents(3780), 'Rimborso prenotazione n. 1');
+
+    expect($refund->succeeded())->toBeTrue()->and($refund->id)->toBe('REF1')
+        ->and($this->gateway->refundCapture('CAP2', Money::cents(100), 'x')->status)->toBe('CAPTURE_FULLY_REFUNDED')
+        ->and(fn () => $this->gateway->refundCapture('CAP3', Money::cents(100), 'x'))->toThrow(PaymentProviderError::class);
+    Http::assertSent(fn (Request $request) => str_ends_with($request->url(), 'CAP1/refund')
+        && $request['amount'] === ['currency_code' => 'EUR', 'value' => '37.80']
+        && $request->hasHeader('PayPal-Request-Id', 'refund-CAP1-3780'));
+});

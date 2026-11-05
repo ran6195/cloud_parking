@@ -3,6 +3,25 @@
 Registro dei file creati e modificati per il motore prenotazioni (`App\Engine`).
 Piano di riferimento: `docs/piano_motore_api.md`.
 
+## Fase 8 — Cancellazioni e rimborsi (2026-11-05)
+
+### Creati
+- `app/Engine/Domain/Booking/`: `CancellationPolicy` (finestra di 24 ore, estremo incluso), `CancellationDecision`, `CancellationReason`.
+- `app/Engine/Domain/Payments/GatewayRefund.php`; `PaymentGateway::refundCapture()` nel gateway PayPal (`/v2/payments/captures/{id}/refund`) e in quello simulato.
+- `app/Engine/Application/CancellationService.php`, `RefundService.php` (rimborso manuale, il predefinito, oppure automatico), `Exceptions/CancellationNotAllowed.php`.
+- `app/Engine/Http/V1/Controllers/CancellationController.php`, `Requests/CancelReservationRequest.php` (codice fiscale o partita IVA).
+- `app/Engine/Mail/ReservationCancelled.php` (cliente), `ReservationCancelledNotice.php` (gestore, con "RIMBORSO DA FARE"); viste `mail/reservation-cancelled*`.
+- `app/Engine/Console/RefundsCommand.php`: `engine:refunds [numero] [--automatic|--mark-refunded]`.
+- `docs/cancellations.md`.
+- `tests/Engine/Unit/Booking/CancellationPolicyTest.php`, `tests/Engine/Feature/Cancellations/CancellationsEndpointTest.php`; test del rimborso in `PayPalGatewayTest`.
+
+### Modificati
+- `openapi/v1.yaml`: codice `not_cancellable_status` per il POST di cancellazione; `refund` (stato e importo) in `CancellationResult`.
+- `app/Engine/Settings/EngineSettings.php`: `refunds.mode` (`manual` | `automatic`).
+- `app/Engine/Http/V1/Presenters/ReservationPresenter.php`: `payment.status = refunded`.
+- `app/Engine/Application/ReservationNotifier.php`: email di cancellazione.
+- `app/Engine/Http/V1/routes.php`, `Problem.php`, `ProblemRenderer.php`, `EngineServiceProvider.php`, `config/engine.php`, `.env.example`.
+
 ## Fase 7 — Pagamenti PayPal (2026-11-05)
 
 ### Creati

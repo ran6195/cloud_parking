@@ -25,6 +25,11 @@ interface PaymentGateway
     public function captureOrder(string $orderId): GatewayCapture;
 
     /**
+     * Rimborsa (anche in parte) un incasso. Idempotente per incasso e importo.
+     */
+    public function refundCapture(string $captureId, Money $amount, string $note): GatewayRefund;
+
+    /**
      * Verifica la firma di una notifica (webhook) del provider.
      *
      * @param  array<string, string>  $headers  nomi in minuscolo

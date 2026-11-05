@@ -6,6 +6,7 @@ use App\Engine\Console\CreateApiClientCommand;
 use App\Engine\Console\EngineMigrateCommand;
 use App\Engine\Console\ExpirePendingReservationsCommand;
 use App\Engine\Console\ImportLegacyExceptionsCommand;
+use App\Engine\Console\RefundsCommand;
 use App\Engine\Domain\Availability\AvailabilityChecker;
 use App\Engine\Domain\Availability\AvailabilityData;
 use App\Engine\Domain\Payments\PaymentGateway;
@@ -114,6 +115,7 @@ class EngineServiceProvider extends ServiceProvider
                 ImportLegacyExceptionsCommand::class,
                 CreateApiClientCommand::class,
                 ExpirePendingReservationsCommand::class,
+                RefundsCommand::class,
             ]);
         }
 

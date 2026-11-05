@@ -6,6 +6,7 @@
  */
 
 use App\Engine\Http\V1\Controllers\AvailabilityController;
+use App\Engine\Http\V1\Controllers\CancellationController;
 use App\Engine\Http\V1\Controllers\DiscountCheckController;
 use App\Engine\Http\V1\Controllers\ExtrasController;
 use App\Engine\Http\V1\Controllers\PaymentController;
@@ -45,6 +46,15 @@ Route::middleware([AuthenticateClient::class, RateLimitClient::class.':default',
     ->group(function (): void {
         Route::post('orders', [PaymentController::class, 'createOrder'])->name('orders');
         Route::post('capture', [PaymentController::class, 'capture'])->name('capture');
+    });
+
+Route::middleware([AuthenticateClient::class, RateLimitClient::class.':cancellations'])
+    ->prefix('cancellations/{token}')
+    ->where(['token' => '[a-f0-9]{64}'])
+    ->name('cancellations.')
+    ->group(function (): void {
+        Route::get('/', [CancellationController::class, 'show'])->name('show');
+        Route::post('/', [CancellationController::class, 'store'])->name('store');
     });
 
 // Chiamato da PayPal: autenticato dalla firma, con un limite per IP.

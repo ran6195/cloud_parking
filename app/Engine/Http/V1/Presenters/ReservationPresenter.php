@@ -3,6 +3,7 @@
 namespace App\Engine\Http\V1\Presenters;
 
 use App\Engine\Application\QuoteSnapshot;
+use App\Engine\Application\RefundService;
 use App\Engine\Domain\Booking\ReservationStatus;
 use App\Engine\Domain\Pricing\PaymentMethod;
 use App\Engine\Domain\Pricing\StayPeriod;
@@ -79,11 +80,15 @@ final class ReservationPresenter
     }
 
     /**
-     * pending (in attesa online), paid, due_on_site (da pagare in parcheggio), none (annullata o scaduta senza pagamento).
-     * "refunded" arriverà con i rimborsi.
+     * pending (in attesa online), paid, due_on_site (da pagare in parcheggio), refunded (rimborsata),
+     * none (annullata o scaduta senza pagamento).
      */
     public static function paymentStatus(Reservation $reservation): string
     {
+        if (RefundService::status($reservation) === RefundService::REFUNDED) {
+            return 'refunded';
+        }
+
         if ($reservation->paid_at !== null) {
             return 'paid';
         }

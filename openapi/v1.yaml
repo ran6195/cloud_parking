@@ -621,7 +621,7 @@ paths:
         '401': { $ref: '#/components/responses/Unauthorized' }
         '404': { $ref: '#/components/responses/NotFound' }
         '409':
-          description: Già annullata (`already_cancelled`) o fuori dalla finestra di cancellazione (`cancellation_window_closed`).
+          description: Già annullata (`already_cancelled`), fuori dalla finestra di cancellazione (`cancellation_window_closed`) o in uno stato che non si può annullare, ad esempio scaduta o conclusa (`not_cancellable_status`).
           content:
             application/problem+json:
               schema: { $ref: '#/components/schemas/Problem' }
@@ -1325,6 +1325,21 @@ components:
           required: [email_sent]
           properties:
             email_sent: { type: boolean }
+        refund:
+          description: Solo per le prenotazioni pagate online.
+          oneOf:
+            - type: object
+              required: [status, amount]
+              properties:
+                status:
+                  type: string
+                  description: |
+                    - `requested`: richiesta registrata, il gestore rimborsa a mano
+                    - `refunded`: rimborso eseguito su PayPal
+                    - `failed`: rimborso automatico non riuscito, lo completa il gestore
+                  enum: [requested, refunded, failed]
+                amount: { $ref: '#/components/schemas/Money' }
+            - type: 'null'
 
     WebhookEvent:
       type: object
@@ -1368,6 +1383,7 @@ components:
             - payment_provider_error
             - already_cancelled
             - cancellation_window_closed
+            - not_cancellable_status
         detail: { type: string }
         errors:
           type: object

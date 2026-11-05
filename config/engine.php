@@ -19,6 +19,8 @@ return [
         'discounts' => (int) env('ENGINE_RATE_LIMIT_DISCOUNTS', 10),
         'reservations' => (int) env('ENGINE_RATE_LIMIT_RESERVATIONS', 20),
         'webhooks' => (int) env('ENGINE_RATE_LIMIT_WEBHOOKS', 120),
+        // Le cancellazioni si fanno con un token: limite stretto contro i tentativi a caso.
+        'cancellations' => (int) env('ENGINE_RATE_LIMIT_CANCELLATIONS', 10),
     ],
 
     // Durata delle Idempotency-Key.

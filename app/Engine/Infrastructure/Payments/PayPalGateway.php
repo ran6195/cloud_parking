@@ -4,6 +4,7 @@ namespace App\Engine\Infrastructure\Payments;
 
 use App\Engine\Domain\Payments\GatewayCapture;
 use App\Engine\Domain\Payments\GatewayOrder;
+use App\Engine\Domain\Payments\GatewayRefund;
 use App\Engine\Domain\Payments\PaymentGateway;
 use App\Engine\Domain\Payments\PaymentProviderError;
 use App\Engine\Domain\Shared\Money;
@@ -95,6 +96,26 @@ final readonly class PayPalGateway implements PaymentGateway
             currency: isset($capture['amount']['currency_code']) ? (string) $capture['amount']['currency_code'] : null,
             payload: (array) $response->json(),
         );
+    }
+
+    public function refundCapture(string $captureId, Money $amount, string $note): GatewayRefund
+    {
+        $response = $this->send(fn (PendingRequest $http) => $http
+            ->withHeaders(['PayPal-Request-Id' => 'refund-'.$captureId.'-'.$amount->cents])
+            ->post('/v2/payments/captures/'.rawurlencode($captureId).'/refund', [
+                'amount' => ['currency_code' => Money::CURRENCY, 'value' => $amount->toDecimalString()],
+                'note_to_payer' => mb_substr($note, 0, 255),
+            ]));
+
+        if ($response->serverError()) {
+            throw PaymentProviderError::because('rimborso: HTTP '.$response->status());
+        }
+
+        if (! $response->successful()) {
+            return new GatewayRefund(null, $this->issue($response) ?? 'FAILED', (array) $response->json());
+        }
+
+        return new GatewayRefund((string) $response->json('id'), (string) $response->json('status'), (array) $response->json());
     }
 
     public function verifyWebhook(array $headers, string $body): bool

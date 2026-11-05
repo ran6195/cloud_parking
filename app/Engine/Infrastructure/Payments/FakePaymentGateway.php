@@ -4,6 +4,7 @@ namespace App\Engine\Infrastructure\Payments;
 
 use App\Engine\Domain\Payments\GatewayCapture;
 use App\Engine\Domain\Payments\GatewayOrder;
+use App\Engine\Domain\Payments\GatewayRefund;
 use App\Engine\Domain\Payments\PaymentGateway;
 use App\Engine\Domain\Payments\PaymentProviderError;
 use App\Engine\Domain\Shared\Money;
@@ -66,6 +67,32 @@ final class FakePaymentGateway implements PaymentGateway
             Money::CURRENCY,
             ['id' => $orderId, 'status' => 'COMPLETED'],
         );
+    }
+
+    public function refundCapture(string $captureId, Money $amount, string $note): GatewayRefund
+    {
+        $this->failIfRequested();
+
+        if ($this->state('refund_declined')) {
+            return new GatewayRefund(null, 'FAILED', ['name' => 'UNPROCESSABLE_ENTITY']);
+        }
+
+        $data = $this->data();
+        $data['refunds'][$captureId] = ($data['refunds'][$captureId] ?? 0) + $amount->cents;
+        Cache::forever(self::CACHE_KEY, $data);
+
+        return new GatewayRefund('FAKEREF'.strtoupper(Str::random(10)), 'COMPLETED', ['capture_id' => $captureId]);
+    }
+
+    /** Centesimi rimborsati su un incasso. */
+    public function refundedCents(string $captureId): int
+    {
+        return (int) ($this->data()['refunds'][$captureId] ?? 0);
+    }
+
+    public function declineRefunds(bool $declined = true): void
+    {
+        $this->setState('refund_declined', $declined);
     }
 
     public function verifyWebhook(array $headers, string $body): bool
@@ -145,11 +172,11 @@ final class FakePaymentGateway implements PaymentGateway
     }
 
     /**
-     * @return array{orders: array<string, array<string, mixed>>, state: array<string, bool>}
+     * @return array{orders: array<string, array<string, mixed>>, state: array<string, bool>, refunds?: array<string, int>}
      */
     private function data(): array
     {
-        /** @var array{orders: array<string, array<string, mixed>>, state: array<string, bool>} */
-        return Cache::get(self::CACHE_KEY, ['orders' => [], 'state' => []]);
+        /** @var array{orders: array<string, array<string, mixed>>, state: array<string, bool>, refunds?: array<string, int>} */
+        return Cache::get(self::CACHE_KEY, ['orders' => [], 'state' => [], 'refunds' => []]);
     }
 }

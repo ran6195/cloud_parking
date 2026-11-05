@@ -26,6 +26,9 @@ final class Problem
         'reservation_not_payable' => 'Prenotazione non pagabile',
         'payment_not_verified' => 'Pagamento non verificato',
         'payment_provider_error' => 'Errore del servizio di pagamento',
+        'already_cancelled' => 'Prenotazione già annullata',
+        'cancellation_window_closed' => 'Cancellazione non più possibile',
+        'not_cancellable_status' => 'Prenotazione non annullabile',
     ];
 
     /**

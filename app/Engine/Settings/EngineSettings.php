@@ -35,6 +35,8 @@ final class EngineSettings
         // Destinatario delle notifiche al gestore; null = nessuna notifica.
         'contact.email' => null,
         'cancellation.free_hours_before_start' => 24,
+        // Rimborsi delle prenotazioni pagate online annullate: "manual" (il gestore rimborsa da PayPal) o "automatic".
+        'refunds.mode' => 'manual',
         'pricing.fallback_years' => 5,
         'extras.covered_parking' => [
             'active' => true, 'name' => 'Posto coperto', 'description' => null,
@@ -123,6 +125,11 @@ final class EngineSettings
         $email = $this->get('contact.email');
 
         return is_string($email) && $email !== '' ? $email : null;
+    }
+
+    public function automaticRefunds(): bool
+    {
+        return $this->get('refunds.mode') === 'automatic';
     }
 
     public function fallbackYears(): int

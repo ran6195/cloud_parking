@@ -2,6 +2,7 @@
 
 namespace App\Engine\Http\V1;
 
+use App\Engine\Application\Exceptions\CancellationNotAllowed;
 use App\Engine\Application\Exceptions\DatesUnavailable;
 use App\Engine\Application\Exceptions\QuoteMismatch;
 use App\Engine\Application\Exceptions\QuoteNotUsable;
@@ -34,7 +35,7 @@ final class ProblemRenderer
 
         return match (true) {
             $e instanceof ValidationException => Problem::validation(self::errors($e)),
-            $e instanceof QuoteNotUsable, $e instanceof ReservationNotPayable => Problem::response(409, $e->errorCode(), $e->getMessage()),
+            $e instanceof QuoteNotUsable, $e instanceof ReservationNotPayable, $e instanceof CancellationNotAllowed => Problem::response(409, $e->errorCode(), $e->getMessage()),
             $e instanceof PaymentProviderError => Problem::response(502, $e->errorCode(), $e->getMessage()),
             $e instanceof DatesUnavailable => Problem::response(409, $e->errorCode(), $e->getMessage(), ['unavailable_dates' => $e->unavailableDates]),
             $e instanceof QuoteMismatch => Problem::response(409, $e->errorCode(), $e->getMessage(), [

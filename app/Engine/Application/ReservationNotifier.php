@@ -3,6 +3,8 @@
 namespace App\Engine\Application;
 
 use App\Engine\Jobs\GenerateReceipt;
+use App\Engine\Mail\ReservationCancelled;
+use App\Engine\Mail\ReservationCancelledNotice;
 use App\Engine\Mail\ReservationConfirmed;
 use App\Engine\Mail\ReservationReceived;
 use App\Engine\Models\Reservation;
@@ -42,6 +44,31 @@ final readonly class ReservationNotifier
         }
 
         $reservation->forceFill(['email_sent' => true])->save();
+
+        return true;
+    }
+
+    /**
+     * Conferma di cancellazione al cliente e avviso al gestore. Restituisce false se l'invio non parte.
+     */
+    public function cancelled(Reservation $reservation): bool
+    {
+        try {
+            Mail::to($reservation->owner()->email)->queue(new ReservationCancelled(
+                $reservation,
+                $this->settings->brandName(),
+                $this->settings->contactPhone(),
+            ));
+
+            $manager = $this->settings->managerEmail();
+            if ($manager !== null) {
+                Mail::to($manager)->queue(new ReservationCancelledNotice($reservation));
+            }
+        } catch (Throwable $e) {
+            report($e);
+
+            return false;
+        }
 
         return true;
     }
