@@ -6,7 +6,7 @@ e del dump del DB. Tutti vanno risolti nel nuovo motore; ✅ = già risolto in f
 | # | Problema nel legacy | Stato nel nuovo motore |
 |---|---|---|
 | 1 | I `price_lists` sono tutti cancellati: i prezzi reali stanno nella tabella `exceptions`, usata come listino mensile (riga del giorno N = prezzo per N giorni). Il "fallback" è in realtà la fonte principale. | ✅ listini veri e completi; l'import da `exceptions` arriva in fase 3 |
-| 2 | Mesi corti: `Carbon::create(anno, mese, durata)` va in overflow, quindi 29 giorni da febbraio = prezzo di 1 giorno di marzo (stesso problema in aprile, giugno, settembre e novembre per 31 giorni). | ✅ impossibile con listini 1–30 obbligatori · ❓ regola per riempire i giorni mancanti all'import (proposta: proseguire l'ultimo incremento) |
+| 2 | Mesi corti: `Carbon::create(anno, mese, durata)` va in overflow, quindi 29 giorni da febbraio = prezzo di 1 giorno di marzo (stesso problema in aprile, giugno, settembre e novembre per 31 giorni). | ✅ impossibile con listini 1–30 obbligatori; all'import i giorni mancanti proseguono l'ultimo incremento (febbraio 2026: 28 gg 155 € → 29 gg 160 €, 30 gg 165 €) |
 | 3 | Durata in minuti reali: a cavallo del cambio dell'ora legale, 08:00 → 08:00 può valere 2 giorni. | ✅ durata sull'orologio |
 | 4 | 10 € al giorno oltre il 30° scritti nel codice. | ✅ prezzo del giorno aggiuntivo nel listino |
 | 5 | Prezzi `float`. | ✅ centesimi interi |
@@ -18,3 +18,4 @@ e del dump del DB. Tutti vanno risolti nel nuovo motore; ✅ = già risolto in f
 | 11 | Stati incoerenti: il codice scrive `conclusa`, che non è nell'ENUM originale; 145 prenotazioni con stato NULL; `confermata` solo da giugno 2026. | ❓ significato di `confermata`; mappatura proposta nel piano (sezione 7) |
 | 12 | 55 prenotazioni con quantità di giorni diversa dalla regola, probabilmente date modificate senza ricalcolo. | ✅ la modifica da pannello ricalcolerà il preventivo (fase 9) |
 | 13 | Posto coperto e "Tieni le chiavi" esclusivi solo nella UI. | ✅ vincolo anche lato server |
+| 14 | Errore di battitura nei prezzi: giugno 2025, 21 giorni = 2.190 € (20 gg 180 €, 22 gg 195 €). | ❓ importato così com'è e segnalato dall'import come anomalia; da correggere a mano (190 €?) |

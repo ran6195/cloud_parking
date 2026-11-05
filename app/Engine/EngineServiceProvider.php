@@ -3,6 +3,7 @@
 namespace App\Engine;
 
 use App\Engine\Console\EngineMigrateCommand;
+use App\Engine\Console\ImportLegacyExceptionsCommand;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 
@@ -24,7 +25,7 @@ class EngineServiceProvider extends ServiceProvider
             ->group(__DIR__.'/Http/V1/routes.php');
 
         if ($this->app->runningInConsole()) {
-            $this->commands([EngineMigrateCommand::class]);
+            $this->commands([EngineMigrateCommand::class, ImportLegacyExceptionsCommand::class]);
         }
     }
 }

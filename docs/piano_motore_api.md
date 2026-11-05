@@ -1,6 +1,6 @@
 # Piano: motore prenotazioni e tariffe API-first
 
-Stato: **bozza da approvare** (aggiornata il 2026-10-31). Riferimento regole di calcolo: `docs/prompt_rebuild_motore_prenotazioni.md`.
+Stato: **in corso**, fasi 0–3 completate (aggiornato il 2026-11-05). Riferimento regole di calcolo: `docs/prompt_rebuild_motore_prenotazioni.md`.
 
 ## 1. Principi
 
@@ -87,8 +87,8 @@ Tabella `engine.api_clients`: nome, `canale`, chiave pubblicabile, chiave segret
 
 ## 5. Schema dati (schema `engine`, sintesi)
 
-- `price_lists` (periodo, soft delete) e `prices` (`price_list_id`, `days` 1..31, `amount_cents`)
-- `legacy_exceptions` (solo per la transizione)
+- `price_lists` (periodo, prezzo del giorno aggiuntivo `extra_day_cents`, `source`, soft delete; periodi attivi non sovrapposti per vincolo) e `prices` (`price_list_id`, `days` 1..30, `amount_cents`)
+- niente tabella `legacy_exceptions`: i prezzi legacy diventano listini mensili con `engine:import-legacy-exceptions`
 - `settings`: extra, prezzi, capacità, blocco automatico, ore di cancellazione, maggiorazione coperto
 - `blocked_dates`
 - `discounts`: codice in maiuscolo, tipo, valore, utilizzi residui, scadenza
@@ -130,12 +130,12 @@ Aggiornate il 2026-10-31 con l'analisi del dump legacy (21.800 prenotazioni). �
 
 1. ❓ **Totale dal client**: il server ricalcola sempre. Il client invia solo il `quote_id`. Se il preventivo è scaduto o il prezzo è cambiato, la risposta è 409 `quote_expired` o `quote_mismatch` con il nuovo preventivo.
 2. ✅ **Sconti**: il totale resta tra 0 e T, e lo 0 è ammesso. Lo sconto si applica anche alla commissione di pagamento, come nel legacy (verificato su 1.443 prenotazioni scontate).
-3. ✅ **`quantita_massima`**: nel legacy non è mai stata applicata. Il codice attivo al 10% ha 228 utilizzi su un massimo di 100, e 0 è usato come "illimitato". Nel motore diventa `max_uses`, con `null` = illimitato. In importazione lo 0 diventa `null`; per i codici già oltre il limite servirà una scelta.
+3. ✅ **`quantita_massima`**: nel legacy non è mai stata applicata. Il codice attivo al 10% ha 228 utilizzi su un massimo di 100, e 0 è usato come "illimitato". Nel motore diventa `max_uses`, con `null` = illimitato. In importazione (fase 11) lo 0 diventa `null`; i codici già oltre il limite si importano con `max_uses = null`, per non disattivarli di colpo, e finiscono nel report (proposta accettata il 2026-11-05).
 4. ✅ **Stati**: nei dati ci sono `conclusa` (12.970), `iniziata` (5.774), `da_pagare` (3.003), `confermata` (165), `pagata` (1) e `NULL` (145). Mappatura proposta (❓ `confermata`): `iniziata` → `pending_payment`, `da_pagare` e `confermata` → `confirmed`, `conclusa` e `pagata` → `paid`; i `NULL` vanno nel report degli scarti.
 5. ✅ **Coperto e "Tieni le chiavi"**: esclusivi anche lato server (`extras_incompatible`).
 6. ❓ **Intervalli di disponibilità**: le date bloccate includono il giorno di rientro, le capacità no. Da confermare.
-7. ✅ **Listini**: nel legacy tutti i `price_lists` sono cancellati e la vera fonte è `exceptions`, una **tabella mensile** (giorno N = prezzo per N giorni). Il motore usa listini completi 1–30 più il giorno aggiuntivo. L'import (fase 3) crea un listino per mese, e nei mesi corti mancano i giorni 29–30 (❓ regola di riempimento). Non serve una `TariffSource` legacy a runtime.
-8. ❓ **Customer**: deduplica per email normalizzata.
+7. ✅ **Listini**: nel legacy tutti i `price_lists` sono cancellati e la vera fonte è `exceptions`, una **tabella mensile** (giorno N = prezzo per N giorni). Il motore usa listini completi 1–30 più il giorno aggiuntivo. L'import (fase 3, `engine:import-legacy-exceptions`) crea un listino per mese; nei mesi corti i giorni mancanti proseguono l'ultimo incremento (✅ deciso il 2026-11-05). Il giorno aggiuntivo vale 10 € come nel legacy (opzione `--extra-day-cents`). Non serve una `TariffSource` legacy a runtime.
+8. ✅ **Customer**: deduplica per email normalizzata (indice unico tra i clienti non cancellati, fase 3).
 9. ❓ **Prenotazioni `iniziata` non pagate**: diventano `scaduta` dopo N minuti (job schedulato) e non occupano posti.
 10. ✅ **Durata e ora legale**: il legacy usa minuti reali in `Europe/Rome`; nei dati non c'è nessun caso in cui l'ora legale cambi il risultato. Il motore conta sull'orologio.
 11. ❓ **CMS locale su SQLite**: resta così, oppure si passa anche il CMS al Postgres locale.

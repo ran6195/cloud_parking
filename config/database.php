@@ -119,6 +119,24 @@ return [
             'sslmode' => env('ENGINE_DB_SSLMODE', env('DB_SSLMODE', 'prefer')),
         ],
 
+        /*
+         * DB legacy CCParking (MariaDB), solo in lettura per gli import del motore.
+         * In locale: docker compose --profile legacy up -d legacy
+         */
+        'legacy' => [
+            'driver' => 'mariadb',
+            'url' => env('LEGACY_DB_URL'),
+            'host' => env('LEGACY_DB_HOST', '127.0.0.1'),
+            'port' => env('LEGACY_DB_PORT', '3307'),
+            'database' => env('LEGACY_DB_DATABASE', 'legacy'),
+            'username' => env('LEGACY_DB_USERNAME', 'root'),
+            'password' => env('LEGACY_DB_PASSWORD', ''),
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'strict' => true,
+        ],
+
         'sqlsrv' => [
             'driver' => 'sqlsrv',
             'url' => env('DB_URL'),

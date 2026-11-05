@@ -3,6 +3,30 @@
 Registro dei file creati e modificati per il motore prenotazioni (`App\Engine`).
 Piano di riferimento: `docs/piano_motore_api.md`.
 
+## Fase 3 — Schema e modelli (2026-11-05)
+
+### Creati
+- `database/engine/migrations/`: `price_lists` e `prices` (vincolo di esclusione Postgres contro i periodi sovrapposti, righe 1–30), `settings`, `blocked_dates`, `discounts` (codice normalizzato e unico tra i non cancellati), `api_clients`, `webhook_endpoints`, `admins`, `customers` (unico per email normalizzata), `quotes`, `reservations` (`number` identity che proseguirà la numerazione legacy, date locali per la disponibilità, vincoli su stato e totali), `reservation_lines`, `payment_transactions`, `idempotency_keys`.
+- `app/Engine/Models/`: `EngineModel` (connessione `engine`, date salvate con l'offset), `PriceList`, `Price`, `Setting`, `BlockedDate`, `Discount`, `Customer`, `ApiClient`, `WebhookEndpoint`, `Admin`, `Quote`, `Reservation`, `ReservationLine`, `PaymentTransaction`, `IdempotencyKey`.
+- `app/Engine/Domain/Booking/ReservationStatus.php`: stati della spec OpenAPI.
+- `app/Engine/Infrastructure/Pricing/`: `DatabaseTariffSource` e `DatabaseDiscountFinder` (utilizzi contati sulle prenotazioni valide).
+- `app/Engine/Legacy/`: `LegacyExceptionsConverter`, `LegacyExceptionsConversion`, `LegacyMonthlyPriceList`.
+- `app/Engine/Console/ImportLegacyExceptionsCommand.php`: `php artisan engine:import-legacy-exceptions [--dry-run] [--extra-day-cents=1000] [--connection=legacy]`, idempotente, con report.
+- `database/engine/factories/`: factory di listini, sconti, clienti, client API, admin, preventivi, prenotazioni, righe, transazioni, date bloccate.
+- `database/engine/seeders/EngineSeeder.php`: listino di esempio e codice `BENVENUTO10`.
+- `tests/Engine/Feature/Models/`: test di listini, sconti, prenotazioni, clienti, preventivi e seeder.
+- `tests/Engine/Feature/Legacy/ImportLegacyExceptionsCommandTest.php`, `tests/Engine/Unit/Legacy/LegacyExceptionsConverterTest.php`.
+
+### Modificati
+- `app/Engine/EngineServiceProvider.php`: registra il comando di import.
+- `config/database.php`: connessione `legacy` (MariaDB, variabili `LEGACY_DB_*`).
+- `.env.example`, `.env` (non versionato): variabili `LEGACY_DB_*`.
+- `composer.json`: autoload `Database\Engine\` → `database/engine/`.
+- `docs/piano_motore_api.md`, `docs/legacy_problemi_prezzi.md`: decisioni e stato aggiornati.
+
+### Rimossi
+- `database/engine/migrations/.gitkeep`.
+
 ## Fase 2 — Motore prezzi puro (2026-10-31)
 
 ### Creati
